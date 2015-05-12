@@ -1,6 +1,6 @@
 var default_N = 50;
 var default_A = 0;
-var default_B = 1;
+var default_B = 5;
 var default_f_a = 0;
 var default_f_b = 0;
 var default_f_a_funk = function(y){return 0;};
@@ -10,8 +10,8 @@ var default_f_y_funk = function(x){return 0;};
 var default_1d_fun = function(x){return 1;};
 //var default_2d_fun = function(x, y){return 1;};
 //var default_2d_fun = function(x, y){return x*x-x-y-x*y-x*x*y;};
-var default_2d_fun = function(x, y){return -y*y*x*x-y*y+y-x*y*y-y*x+3*y*x*x-x*x;};
-//var default_2d_fun = function(x, y){return (x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
+//var default_2d_fun = function(x, y){return -y*y*x*x-y*y+y-x*y*y-y*x+3*y*x*x-x*x;};
+var default_2d_fun = function(x, y){return (x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
 
 function OneDimension() {
     this.el = $('#main_form');
@@ -134,7 +134,7 @@ function two_dimension_get_matrix_element(i1, i2, j1, j2, funk){
     if ((Math.abs(i1 - j1) < 1.01) && (Math.abs(i2 - j2) < 1.01)) {
         if(i1 != 0 && i1 != this.n-1 && j1 != 0 && j1 != this.n-1 && i2 != 0 && i2 != this.n-1 && j2 != 0 && j2 != this.n-1)
             this.A_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] = this.int_cells(i1, i2, j1, j2, function (x,y) {
-                return -this.diff_fi_i_x(i1,i2,x,y)*this.diff_fi_i_x(j1,j2,x,y)-this.diff_fi_i_y(i1,i2,x,y)*this.fi_i(j1,j2,x,y)+this.diff_fi_i_x(i1,i2,x,y)*this.fi_i(j1,j2,x,y)+this.fi_i(i1,i2,x,y)*this.fi_i(j1,j2,x,y);
+                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
             });
         if(i1 != 0 && i1 != this.n-1 && i2 != 0 && i2 != this.n-1)
             funk.value += -this.fun(this.a.x + (i1) * this.h, this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
@@ -307,7 +307,7 @@ function ch(x){
 }
 
 function ch2(x,y){
-    return (x - this.a.x)/(this.b.x - this.a.x)*(this.f_b(y) - this.f_a(y)) + this.f_a(y) + this.f_y(x);
+    return (x - this.a.x)/(this.b.x - this.a.x)*(this.f_b(y) - this.f_a(y)) + this.f_a(y) + this.f_y(x) * y / (this.a.y - this.b.y) + this.f_y(x);
 }
 
 function isEnter(el){

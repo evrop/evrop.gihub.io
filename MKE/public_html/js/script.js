@@ -15,7 +15,7 @@ $(document).ready(function () {
         var max=0;
         for(var i = 0, xx = mke.a.x; i < nn; ++i){
             for(var j = 0, yy = mke.a.y; j < nn; ++j){
-                var temp = function(xx, yy){return (xx-1)*(yy-1)*xx*yy;};
+                var temp = function(xx, yy){return (xx-5)*(yy-5)*xx*yy;};
                 if(max<Math.abs(temp(xx, yy)-mke.get_answ(xx, yy)))
                     max = Math.abs(temp(xx, yy)-mke.get_answ(xx, yy));
                 console.log(Math.abs(temp(xx, yy)-mke.get_answ(xx, yy)) + ' ' + mke.get_answ(xx, yy) + ' ' + temp(xx, yy) + ' ' + xx + ' ' + yy);                
