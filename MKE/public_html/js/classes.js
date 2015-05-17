@@ -1,17 +1,19 @@
-var default_N = 50;
+var default_N = 30;
 var default_A = 0;
 var default_B = 5;
-var default_f_a = 0;
-var default_f_b = 0;
-var default_f_a_funk = function(y){return 0;};
-var default_f_b_funk = function(y){return 0;};
-var default_f_y_funk = function(x){return 0;};
-//var default_f_y_funk = function(x){return x*(1-x);};
+var default_f_a = 3;
+var default_f_b = 5;
+var default_f_a_funk = function(y){return 5*y+10;};
+var default_f_b_funk = function(y){return 10*y+35;};
+//var default_f_y_funk = function(x){return 0;};
+var default_f_y_funk = function(x){return 5*x+10;};
+//var default_f_y_funk2 = function(x){return 10*x+35;};
 var default_1d_fun = function(x){return 1;};
 //var default_2d_fun = function(x, y){return 1;};
 //var default_2d_fun = function(x, y){return x*x-x-y-x*y-x*x*y;};
-//var default_2d_fun = function(x, y){return -y*y*x*x-y*y+y-x*y*y-y*x+3*y*x*x-x*x;};
-var default_2d_fun = function(x, y){return (x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
+//var default_2d_fun = function(x, y){return (x-5)*x-2*y+10-(x-5)*(y-5)-(y-5)*x-(x-5)*(y-5)*x;};
+//var default_2d_fun = function(x, y){return (x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
+var default_2d_fun = function(x, y){return x+5-y-5-x*y-5*x-5*y-10;};
 
 function OneDimension() {
     this.el = $('#main_form');
@@ -40,7 +42,6 @@ function OneDimension() {
     this.int_cells = one_direct_int_cells;
     this.get_answ = get_answ;
     this.graph = draw_plot;
-    this.define_border_condition = ch;
 }
 
 function TwoDimension() {
@@ -82,7 +83,6 @@ function TwoDimension() {
     this.int_cells = two_direct_int_cells;
     this.get_answ = two_dimension_get_answ;
     this.graph = draw_plot;
-    this.define_border_condition = ch2;
 }
 
 function initialize() {
@@ -125,6 +125,14 @@ function get_matrix_element(i, j, funk) {
             funk.value += this.fun(this.a + i * this.h) * this.int_cells(i, j, function (x) {
                 return this.fi_i(j, x) * this.fi_i(i, x);
             });
+        if(j==0)
+            funk.value -= this.f_a * this.int_cells(i, j, function (x) {
+                return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
+        });
+        if(j==this.n-1)
+            funk.value -= this.f_b * this.int_cells(i, j, function (x) {
+                return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
+        });       
     }
     else
         return 0;
@@ -140,6 +148,22 @@ function two_dimension_get_matrix_element(i1, i2, j1, j2, funk){
             funk.value += -this.fun(this.a.x + (i1) * this.h, this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
                 return this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
             });
+        if(j1 == 0)
+            funk.value -= this.f_a(this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+            });        
+        if(j1 == this.n - 1)
+            funk.value -= this.f_b(this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+            }); 
+        if(j2 == 0)
+            funk.value -= this.f_y(this.a.x + (i1) * this.h) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+            });  
+        //if(j2 == this.n - 1)
+        //    funk.value -= default_f_y_funk2(this.a.x + (i1) * this.h) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+        //        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+        //    });  
     }
     else
         return 0;
@@ -275,7 +299,8 @@ function get_answ(x) {
     for (var i = 0; i < this.answer.length; ++i) {
         s += this.answer[i] * this.fi_i(i+1, x);
     }
-    return s + this.define_border_condition(x);
+    s += this.f_a * this.fi_i(0, x) + this.f_b * this.fi_i(this.n-1, x);
+    return s;
 }
 
 function two_dimension_get_answ(x, y) {
@@ -284,12 +309,24 @@ function two_dimension_get_answ(x, y) {
     for (var i = 0; i < this.answer.length; ++i) {
         s += this.answer[i] * this.fi_i(Math.floor((i)/(this.n-2))+add, (i)%(this.n-2)+add, x, y);
     }
-    return s + this.define_border_condition(x,y);
+    for( i=0 ; i < this.n ; ++i){
+        s += this.f_y(x) * this.fi_i( i, 0, x, y);
+}
+    for( i=1 ; i < this.n ; ++i){
+        s += this.f_a(y) * this.fi_i( 0, i, x, y);
+    }
+    for( i=1 ; i < this.n ; ++i){
+        s += this.f_b(y) * this.fi_i( this.n-1, i, x, y);
+    }   
+    //for( i=1 ; i < this.n-1 ; ++i){
+    //    s += default_f_y_funk2(x) * this.fi_i( i, this.n - 1, x, y);
+    //}
+    return s;
 }
 
 function draw_plot() {
     var f1 = function (x) {
-        return Math.pow(x, 2) / 2 + 1.5 * x + 1;
+        return Math.pow(x, 2) / 2 - 2.1 * x + 3;
     };
     var board = JXG.JSXGraph.initBoard('jxgbox', {keepaspectratio: true, boundingbox: [this.a-1, Math.max(this.f_a,this.f_a) + 5, this.b+1, Math.min(this.f_a,this.f_a) - 5], axis: true});
     var x = this.a;
@@ -300,14 +337,6 @@ function draw_plot() {
         turtle.moveTo([x, this.get_answ(x)]);
         turtle1.moveTo([x, f1(x)]);
     }
-}
-
-function ch(x){
-    return (x - this.a)/(this.b - this.a)*(this.f_b - this.f_a) + this.f_a;
-}
-
-function ch2(x,y){
-    return (x - this.a.x)/(this.b.x - this.a.x)*(this.f_b(y) - this.f_a(y)) + this.f_a(y) + this.f_y(x) * y / (this.a.y - this.b.y) + this.f_y(x);
 }
 
 function isEnter(el){
