@@ -7,7 +7,7 @@ var default_f_a_funk = function(y){return 5*y+10;};
 var default_f_b_funk = function(y){return 10*y+35;};
 //var default_f_y_funk = function(x){return 0;};
 var default_f_y_funk = function(x){return 5*x+10;};
-//var default_f_y_funk2 = function(x){return 10*x+35;};
+var default_f_y_funk2 = function(x){return 10*x+35;};
 var default_1d_fun = function(x){return 1;};
 //var default_2d_fun = function(x, y){return 1;};
 //var default_2d_fun = function(x, y){return x*x-x-y-x*y-x*x*y;};
@@ -148,11 +148,11 @@ function two_dimension_get_matrix_element(i1, i2, j1, j2, funk){
             funk.value += -this.fun(this.a.x + (i1) * this.h, this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
                 return this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
             });
-        if(j1 == 0)
+        if(j1 == 0 && j2 != 0 && j2 != this.n - 1)
             funk.value -= this.f_a(this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
                 return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
             });        
-        if(j1 == this.n - 1)
+        if(j1 == this.n - 1 && j2 != 0 && j2 != this.n - 1)
             funk.value -= this.f_b(this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
                 return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
             }); 
@@ -160,10 +160,10 @@ function two_dimension_get_matrix_element(i1, i2, j1, j2, funk){
             funk.value -= this.f_y(this.a.x + (i1) * this.h) * this.int_cells(i1, i2, j1, j2, function (x,y) {
                 return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
             });  
-        //if(j2 == this.n - 1)
-        //    funk.value -= default_f_y_funk2(this.a.x + (i1) * this.h) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-        //        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-        //    });  
+        if(j2 == this.n - 1)
+            funk.value -= default_f_y_funk2(this.a.x + (i1) * this.h) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+            });  
     }
     else
         return 0;
@@ -279,7 +279,7 @@ function two_direct_int_cells(x1, y1, x2, y2, f) {
         ye = yb + this.tau;
         yq = yb - this.tau;
     }    
-    var num_stong = 15;
+    var num_stong = 100;
     var hxx = Math.abs(xq - xe) / (num_stong - 1);
     var hyy = Math.abs(yq - ye) / (num_stong - 1);
     var s = 0;
@@ -318,9 +318,9 @@ function two_dimension_get_answ(x, y) {
     for( i=1 ; i < this.n ; ++i){
         s += this.f_b(y) * this.fi_i( this.n-1, i, x, y);
     }   
-    //for( i=1 ; i < this.n-1 ; ++i){
-    //    s += default_f_y_funk2(x) * this.fi_i( i, this.n - 1, x, y);
-    //}
+    for( i=1 ; i < this.n-1 ; ++i){
+        s += default_f_y_funk2(x) * this.fi_i( i, this.n - 1, x, y);
+    }
     return s;
 }
 
