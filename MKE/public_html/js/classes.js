@@ -33,6 +33,7 @@ function OneDimension() {
     this.fun = this.isEnter(this.fun) ? function(x){return try_funk_x(this.fun, x);} : default_1d_fun;
     this.h = (this.b - this.a) / (this.n - 1);
     this.A_matrix = new Array();
+    this.diff_matrix = new Array();
     this.b_vector = new Array();
     this.answer = new Array();
     this.fi_i = one_direct_fi_i;
@@ -89,10 +90,14 @@ function initialize() {
     for (var i = 1; i < this.n-1; ++i) {
         var funk = {value: 0};
         for (var j = 0; j < this.n; ++j) {
-            if (j == 0)
+            if (j == 0){
                 this.A_matrix[i-1] = new Array;
-            if(j != 0 && j != this.n-1)
+                this.diff_matrix[i-1] = new Array;
+            }
+            if(j != 0 && j != this.n-1){
                 this.A_matrix[i-1][j-1] = 0;
+                this.diff_matrix[i-1][j-1] = 0;
+            }
             this.get_matrix_element(i, j, funk);
         }
         this.b_vector[i-1] = funk.value;
@@ -117,18 +122,27 @@ function two_dimension_initialize(){
 
 function get_matrix_element(i, j, funk) {
     if (Math.abs(i - j) < 1.01) {
+        //формируем обычную левую часть матрицы для уравнения du/dt=d2u/dx^2+du/dx+u(x,t)+f(x,t)
         if(i != 0 && i != this.n-1 && j != 0 && j != this.n-1)
             this.A_matrix[i-1][j-1] = this.int_cells(i, j, function (x) {
-                return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);
+                return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.diff_fi_i(j, x)*this.fi_i(i, x)+this.fi_i(j, x)*this.fi_i(i, x);
             });
+        //формируем часть при коэфициентах du/dt системы диф. уравнений
+        if(i != 0 && i != this.n-1 && j != 0 && j != this.n-1)
+            this.diff_matrix[i-1][j-1] = this.int_cells(i, j, function (x) {
+                return this.fi_i(j, x) * this.fi_i(i, x);
+            });        
+        //формируем правую часть системы
         if(i != 0 && i != this.n-1)
             funk.value += this.fun(this.a + i * this.h) * this.int_cells(i, j, function (x) {
                 return this.fi_i(j, x) * this.fi_i(i, x);
             });
+        //учитываем краевое условие на левой границе х - в точке а
         if(j==0)
             funk.value -= this.f_a * this.int_cells(i, j, function (x) {
                 return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
         });
+        //учитываем краевое условие на правой границе х - в точке b
         if(j==this.n-1)
             funk.value -= this.f_b * this.int_cells(i, j, function (x) {
                 return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
