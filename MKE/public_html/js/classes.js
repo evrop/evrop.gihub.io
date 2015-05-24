@@ -138,12 +138,12 @@ function get_matrix_element(i, j, funk) {
                 return this.fi_i(j, x) * this.fi_i(i, x);
             });
         //учитываем краевое условие на левой границе х - в точке а
-        if(j==0)
+        if(j == 0)
             funk.value -= this.f_a * this.int_cells(i, j, function (x) {
                 return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
         });
         //учитываем краевое условие на правой границе х - в точке b
-        if(j==this.n-1)
+        if(j == this.n-1)
             funk.value -= this.f_b * this.int_cells(i, j, function (x) {
                 return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
         });       
@@ -370,6 +370,101 @@ function try_funk_y(str, y) {
 
 function try_funk_x_y(str, x,  y) {
     return eval(str);
+}
+
+function DiffSchemeSolve( A, C, f, T, tau, beg){
+    var answer = [];
+    for(var i = 0; i < A.length; ++i){
+        answer[i] = new Array();
+        answer[i][0] = beg[i];
+    }
+    for(var i = 0; i < T - 1; ++i){
+        var A_matr = [];
+        var f_right = [];
+        for(var k = 0; k < A.length; ++k){
+            var val = 0;
+            for(var j = 0; j < A.length; ++j){
+                A_matr[k][j] = C[k][j] / (tau) + 0.5 * A[k][j];
+                val += (-C[k][j] / (tau) + 0.5 * A[k][j]) * beg[i];
+            }
+            f_right[k] = f[k] - val;
+        }
+        var gauss = new Gauss(A_matr, f_right);
+        var temp = gauss.solve();
+        for(var k = 0; k < A.length; ++k){
+            answer[i][k] = temp[k];
+        }
+    } 
+    return answer;
+}
+
+function RangeCut(A, b, C, s0, tau){
+    //Члены, входящие в систему с неизвестными искомыми функциями 'fi_i(t)', представляется матрицей
+    this.A = A;
+    //Свободные члены системы, вектор
+    this.b = b;
+    //Члены, входящие в систему с неизвестными искомыми функциями 'd(fi_i(t))/dt', представляется матрицей
+    this.C = C;
+    //Вектор начальных значений неизвестных функций 'fi_i(t)', вычисляется из начального условия
+    this.s = new Array();
+    //Искомые значения неизвестных функций
+    //Каждая функция определяется вектором значений в заданных точках дискретизирующих исходную область.
+    //Таким образом, ответ представляет собой матрицу
+    this.answer = new Array();
+    //Шаг дискретизации, берется из шага this.tau для МКЭ
+    this.h = tau;
+    //this.n нужна для удобства и равна либо размерности N матрицы C є N x N, либо матрицы А, либо вектора b
+    this.n = b.length;
+    //Теперь необходимо из начальных условий s0 "вытянуть" начальные условия для неизвестной комбинации fi_i, i=1,..,this.n
+    for(var i = 0; i < this.n; ++i){
+        for(var j = 0, sum = 0; j < this.n; ++j){
+            sum += this.C[i][j] * s0[j];
+        }
+        this.s[i] = sum;
+    }
+    
+    //Определяем функцию, вычисляющую значения для коэффициентов k:
+    this.f = function(index, add){
+        var result = 0;
+        var k = index;
+        for(var i = 0; i < this.n; ++i){
+            result += A[k][i] * (s0[i] + add);
+        }
+        result -= this.b[k];
+        return result;
+    };
+    
+    //Отсюда начинаем вычислять ответы:
+    //Для начальных данных все просто и известно:
+    var gauss = new Gauss(this.C,this.s);
+    console.log(this.s[0]+' '+this.s[1]+' '+this.s[2]);
+    this.answer[0] = gauss.solve();    
+    for(var i = 1; i < this.n; ++i){
+        var k = new Array();
+        s_temp = new Array();
+        for(var j = 0; j < this.n; ++j){
+            k[0] = this.h * this.f(j, 0);
+            
+            k[1] = this.h * this.f(j, k[0]/2.0);
+            
+            k[2] = this.h * this.f(j, k[1]/2.0);
+            
+            k[3] = this.h * this.f(j, k[2]);
+            
+            s_temp[j] = this.s[j] + (k[0] + 2.0*k[1] + 2.0*k[2] + k[3])/6.0;
+        }   
+        this.s = s_temp;
+        //В предварительном ответе получаем систему в которой комбинация функций равна какому-то числу
+        //Чтобы получить полноценный ответ, необходимо решить эту систему методом Гаусса
+        console.log(k[0]+' '+k[1]+' '+k[2]+' '+k[3]+' __'+this.s[0]+' '+this.s[1]+' '+this.s[2]);
+        var gauss = new Gauss(this.C,this.s);
+        this.answer[i] = gauss.solve();
+    }
+    
+    //Отдаем ответ:
+    this.get_answer = function(){
+        return this.answer;
+    };
 }
 
 function Gauss(A, b) {
