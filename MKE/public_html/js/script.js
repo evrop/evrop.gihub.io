@@ -6,8 +6,9 @@ $(document).ready(function () {
         else
             mke = new TwoDimension();
         mke.init_system(mke.A_matrix, mke.b_vector);
-        var gauss = new Gauss(mke.A_matrix,mke.b_vector);
-        mke.answer = gauss.solve();
+        //var gauss = new Gauss(mke.A_matrix,mke.b_vector);
+        //mke.answer = gauss.solve();
+        mke.answer = DiffSchemeSolve(mke.A_matrix, mke.diff_matrix, mke.b_vector, mke.n2, mke.tau, mke.begginary);
         //px
         var nn = 500;
         var hh = (mke.b.x - mke.a.x) / (nn - 1);

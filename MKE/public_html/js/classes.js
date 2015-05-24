@@ -3,6 +3,7 @@ var default_A = 0;
 var default_B = 5;
 var default_f_a = 3;
 var default_f_b = 5;
+default_T = 1;
 var default_f_a_funk = function(y){return 5*y+10;};
 var default_f_b_funk = function(y){return 10*y+35;};
 //var default_f_y_funk = function(x){return 0;};
@@ -29,9 +30,16 @@ function OneDimension() {
     this.f_b = common.find('#x1_factor').val();
     this.f_a = this.isEnter(this.f_a) ? +this.f_a : default_f_a;
     this.f_b = this.isEnter(this.f_b) ? +this.f_b : default_f_b;
+    this.f_y = common.find('#beg_factor').val();
+    this.f_y = this.isEnter(this.f_y) ? function(x){return try_funk_x(this.f_y,x);} : default_f_y_funk;
     this.fun = common.find('#right_side').val();
     this.fun = this.isEnter(this.fun) ? function(x){return try_funk_x(this.fun, x);} : default_1d_fun;
+    this.T = common.find('#T_limit').val();
+    this.T = this.isEnter(this.T) ? +this.T : default_T;
+    this.n2 = common.find('#number_for_t').val();
+    this.n2 = this.isEnter(this.n2) ? +this.n2 : default_N;
     this.h = (this.b - this.a) / (this.n - 1);
+    this.tau = (this.T) / (this.n2 - 1);
     this.A_matrix = new Array();
     this.diff_matrix = new Array();
     this.b_vector = new Array();
@@ -101,6 +109,12 @@ function initialize() {
             this.get_matrix_element(i, j, funk);
         }
         this.b_vector[i-1] = funk.value;
+    }
+    
+    this.begginary = new Array();
+    
+    for (var i = 0; i < this.n; ++i) {
+        this.begginary[i] = this.f_y(this.a + i * this.h);
     }
 }
 
