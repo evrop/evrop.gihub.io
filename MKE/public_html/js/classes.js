@@ -1,21 +1,25 @@
 var default_N = 30;
 var default_A = 0;
 var default_B = 5;
-var default_f_a = 3;
-var default_f_b = 5;
-default_T = 1;
+//var default_f_a = 3;
+//var default_f_b = 5;
+var default_T = 0.5;
 var default_f_a_funk = function(y){return 5*y+10;};
 var default_f_b_funk = function(y){return 10*y+35;};
 //var default_f_y_funk = function(x){return 0;};
 var default_f_y_funk = function(x){return 5*x+10;};
-var default_f_y_funk2 = function(x){return 10*x+35;};
-var default_1d_fun = function(x){return 1;};
+//var default_f_y_funk2 = function(x){return 10*x+35;};
+//var default_1d_fun = function(x){return 1;};
 //var default_2d_fun = function(x, y){return 1;};
 //var default_2d_fun = function(x, y){return x*x-x-y-x*y-x*x*y;};
 //var default_2d_fun = function(x, y){return (x-5)*x-2*y+10-(x-5)*(y-5)-(y-5)*x-(x-5)*(y-5)*x;};
 //var default_2d_fun = function(x, y){return (x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
-var default_2d_fun = function(x, y){return x+5-y-5-x*y-5*x-5*y-10;};
+var default_1d_fun = function(x, y){return x+5-y-5-x*y-5*x-5*y-10;};
 
+/*var default_f_a_funk = function(y){return 1;};
+var default_f_b_funk = function(y){return 1;};
+var default_f_y_funk = function(x){return 1;};
+var default_1d_fun = function(x, y){return 0;};*/
 function OneDimension() {
     this.el = $('#main_form');
     var common = this.el.find('.common_settings');
@@ -28,9 +32,9 @@ function OneDimension() {
     this.b = this.isEnter(this.b) ? +this.b : default_B;
     this.f_a = common.find('#x0_factor').val();
     this.f_b = common.find('#x1_factor').val();
-    this.f_a = this.isEnter(this.f_a) ? +this.f_a : default_f_a;
-    this.f_b = this.isEnter(this.f_b) ? +this.f_b : default_f_b;
     this.f_y = common.find('#beg_factor').val();
+    this.f_a = this.isEnter(this.f_a) ? function(y){return try_funk_y(this.f_a,y);} : default_f_a_funk;
+    this.f_b = this.isEnter(this.f_b) ? function(y){return try_funk_y(this.f_b,y);} : default_f_b_funk;
     this.f_y = this.isEnter(this.f_y) ? function(x){return try_funk_x(this.f_y,x);} : default_f_y_funk;
     this.fun = common.find('#right_side').val();
     this.fun = this.isEnter(this.fun) ? function(x){return try_funk_x(this.fun, x);} : default_1d_fun;
@@ -96,7 +100,12 @@ function TwoDimension() {
 
 function initialize() {
     for (var i = 1; i < this.n-1; ++i) {
-        var funk = {value: 0};
+        var funk = {value: new Array()};
+        
+        for(var k = 0; k < this.n; ++k){
+            funk.value[k] = 0;
+        }
+        
         for (var j = 0; j < this.n; ++j) {
             if (j == 0){
                 this.A_matrix[i-1] = new Array;
@@ -116,6 +125,21 @@ function initialize() {
     for (var i = 0; i < this.n; ++i) {
         this.begginary[i] = this.f_y(this.a + i * this.h);
     }
+    
+    //теперь, необходимо транспонировать b_vector так, чтобы b_vector[i] соответствовали различные
+    //различные правые части в определенный момент времени
+    var temp = new Array();
+    for(var i = 0; i < this.n; ++i){
+        temp[i] = new Array();
+    }
+    for(var i = 0; i < this.b_vector.length; ++i){
+        var len = this.b_vector[i].length;
+        for(var j = 0; j < len; ++j){
+            temp[j][i] = this.b_vector[i][j];
+        }
+    }
+    this.b_vector = temp;
+           
 }
 
 function two_dimension_initialize(){
@@ -140,27 +164,35 @@ function get_matrix_element(i, j, funk) {
         if(i != 0 && i != this.n-1 && j != 0 && j != this.n-1)
             this.A_matrix[i-1][j-1] = this.int_cells(i, j, function (x) {
                 return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.diff_fi_i(j, x)*this.fi_i(i, x)+this.fi_i(j, x)*this.fi_i(i, x);
+                //return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);
             });
         //формируем часть при коэфициентах du/dt системы диф. уравнений
         if(i != 0 && i != this.n-1 && j != 0 && j != this.n-1)
-            this.diff_matrix[i-1][j-1] = this.int_cells(i, j, function (x) {
+            this.diff_matrix[i-1][j-1] = - this.int_cells(i, j, function (x) {
                 return this.fi_i(j, x) * this.fi_i(i, x);
             });        
         //формируем правую часть системы
         if(i != 0 && i != this.n-1)
-            funk.value += this.fun(this.a + i * this.h) * this.int_cells(i, j, function (x) {
-                return this.fi_i(j, x) * this.fi_i(i, x);
-            });
+            for(var k = 0; k < this.n; ++k){
+                funk.value[k] += - this.fun(this.a + i * this.h, k * this.tau) * this.int_cells(i, j, function (x) {
+                    return this.fi_i(j, x) * this.fi_i(i, x);
+                });                
+            }
+
         //учитываем краевое условие на левой границе х - в точке а
         if(j == 0)
-            funk.value -= this.f_a * this.int_cells(i, j, function (x) {
-                return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
-        });
+            for(var k = 0; k < this.n; ++k){
+                funk.value[k] -= this.f_a(k * this.tau) * this.int_cells(i, j, function (x) {
+                    return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
+                });
+            }
         //учитываем краевое условие на правой границе х - в точке b
         if(j == this.n-1)
-            funk.value -= this.f_b * this.int_cells(i, j, function (x) {
-                return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
-        });       
+            for(var k = 0; k < this.n; ++k){
+                funk.value[k] -= this.f_b(k * this.tau) * this.int_cells(i, j, function (x) {
+                    return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
+                }); 
+            }
     }
     else
         return 0;
@@ -322,12 +354,12 @@ function two_direct_int_cells(x1, y1, x2, y2, f) {
     return s;
 }
 
-function get_answ(x) {
+function get_answ(x, t) {
     var s = 0;
-    for (var i = 0; i < this.answer.length; ++i) {
-        s += this.answer[i] * this.fi_i(i+1, x);
+    for (var i = 0; i < this.answer[0].length; ++i) {
+        s += this.answer[t][i] * this.fi_i(i+1, x);
     }
-    s += this.f_a * this.fi_i(0, x) + this.f_b * this.fi_i(this.n-1, x);
+    s += this.f_a(t) * this.fi_i(0, x) + this.f_b(t) * this.fi_i(this.n-1, x);
     return s;
 }
 
@@ -388,25 +420,30 @@ function try_funk_x_y(str, x,  y) {
 
 function DiffSchemeSolve( A, C, f, T, tau, beg){
     var answer = [];
+    answer[0] = new Array();
     for(var i = 0; i < A.length; ++i){
-        answer[i] = new Array();
-        answer[i][0] = beg[i];
+        answer[0][i] = beg[i+1];
     }
+    for(var i = 1; i < T; ++i){
+        answer[i] = new Array();
+    }
+    
     for(var i = 0; i < T - 1; ++i){
         var A_matr = [];
         var f_right = [];
         for(var k = 0; k < A.length; ++k){
             var val = 0;
+            A_matr[k] = new Array();
             for(var j = 0; j < A.length; ++j){
                 A_matr[k][j] = C[k][j] / (tau) + 0.5 * A[k][j];
-                val += (-C[k][j] / (tau) + 0.5 * A[k][j]) * beg[i];
+                val += (-C[k][j] / (tau) + 0.5 * A[k][j]) * answer[i][j];
             }
-            f_right[k] = f[k] - val;
+            f_right[k] = 0.5 * f[i][k] + 0.5 * f[i+1][k] - val;
         }
         var gauss = new Gauss(A_matr, f_right);
         var temp = gauss.solve();
         for(var k = 0; k < A.length; ++k){
-            answer[i][k] = temp[k];
+            answer[i+1][k] = temp[k];
         }
     } 
     return answer;
