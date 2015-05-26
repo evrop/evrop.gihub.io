@@ -1,25 +1,22 @@
-var default_N = 30;
+var default_N = 10;
 var default_A = 0;
 var default_B = 5;
-//var default_f_a = 3;
-//var default_f_b = 5;
-var default_T = 0.5;
-var default_f_a_funk = function(y){return 5*y+10;};
-var default_f_b_funk = function(y){return 10*y+35;};
-//var default_f_y_funk = function(x){return 0;};
-var default_f_y_funk = function(x){return 5*x+10;};
-//var default_f_y_funk2 = function(x){return 10*x+35;};
-//var default_1d_fun = function(x){return 1;};
+var default_T = 2;
+var default_f_a_1D_funk = function(y){return y*y*y+5*y+10;};
+var default_f_b_1D_funk = function(y){return y*y*y+10*y+160;};
+var default_f_y_1D_funk = function(x){return x*x*x+5*x+10;};
+var default_f_a_x_2D_funk = function(y,t){return t*y*y*y+5*y+10;};
+var default_f_a_y_2D_funk = function(x,t){return t*x*x*x+5*x+10;};
+var default_f_b_x_2D_funk = function(y,t){return t*y*y*y+10*y+160;};
+var default_f_b_y_2D_funk = function(x,t){return t*x*x*x+10*x+160;};
+var default_f_y_2D_funk = function(x,y){return y*x*x*x+5*x+10;};
 //var default_2d_fun = function(x, y){return 1;};
 //var default_2d_fun = function(x, y){return x*x-x-y-x*y-x*x*y;};
 //var default_2d_fun = function(x, y){return (x-5)*x-2*y+10-(x-5)*(y-5)-(y-5)*x-(x-5)*(y-5)*x;};
 //var default_2d_fun = function(x, y){return (x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
-var default_1d_fun = function(x, y){return x+5-y-5-x*y-5*x-5*y-10;};
+var default_1d_fun = function(x, y){return 3*y*y+x+5-1*(3*x*x+y+5)-6*x-1*(x*x*x+y*y*y+x*y+5*x+5*y+10);};
+var default_2d_fun = function(x, y, t){return t*(x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
 
-/*var default_f_a_funk = function(y){return 1;};
-var default_f_b_funk = function(y){return 1;};
-var default_f_y_funk = function(x){return 1;};
-var default_1d_fun = function(x, y){return 0;};*/
 function OneDimension() {
     this.el = $('#main_form');
     var common = this.el.find('.common_settings');
@@ -33,16 +30,16 @@ function OneDimension() {
     this.f_a = common.find('#x0_factor').val();
     this.f_b = common.find('#x1_factor').val();
     this.f_y = common.find('#beg_factor').val();
-    this.f_a = this.isEnter(this.f_a) ? function(y){return try_funk_y(this.f_a,y);} : default_f_a_funk;
-    this.f_b = this.isEnter(this.f_b) ? function(y){return try_funk_y(this.f_b,y);} : default_f_b_funk;
-    this.f_y = this.isEnter(this.f_y) ? function(x){return try_funk_x(this.f_y,x);} : default_f_y_funk;
+    this.f_a = this.isEnter(this.f_a) ? function(y){return try_funk_y(this.f_a,y);} : default_f_a_1D_funk;
+    this.f_b = this.isEnter(this.f_b) ? function(y){return try_funk_y(this.f_b,y);} : default_f_b_1D_funk;
+    this.f_y = this.isEnter(this.f_y) ? function(x){return try_funk_x(this.f_y,x);} : default_f_y_1D_funk;
     this.fun = common.find('#right_side').val();
     this.fun = this.isEnter(this.fun) ? function(x){return try_funk_x(this.fun, x);} : default_1d_fun;
     this.T = common.find('#T_limit').val();
     this.T = this.isEnter(this.T) ? +this.T : default_T;
     this.n2 = common.find('#number_for_t').val();
-    this.n2 = this.isEnter(this.n2) ? +this.n2 : default_N;
     this.h = (this.b - this.a) / (this.n - 1);
+    this.n2 = this.isEnter(this.n2) ? +this.n2 : Math.floor(2 * this.T / this.h + 2);
     this.tau = (this.T) / (this.n2 - 1);
     this.A_matrix = new Array();
     this.diff_matrix = new Array();
@@ -54,7 +51,7 @@ function OneDimension() {
     this.get_matrix_element = get_matrix_element;
     this.int_cells = one_direct_int_cells;
     this.get_answ = get_answ;
-    this.graph = draw_plot;
+    //this.graph = draw_plot;
 }
 
 function TwoDimension() {
@@ -75,17 +72,33 @@ function TwoDimension() {
     };
     this.b.x = this.isEnter(this.b.x) ? +this.b.x : default_B;
     this.b.y = this.isEnter(this.b.y) ? +this.b.y : default_B;
-    this.f_a = common.find('#x0_factor').val();
-    this.f_b = common.find('#x1_factor').val();
+    this.f_a = {
+        x:common.find('#left_border_x_factor').val(),
+        y:common.find('#left_border_y_factor').val(),
+    };
+    this.f_b = {
+        x:common.find('#right_border_x_factor').val(),
+        y:common.find('#right_border_y_factor').val(),
+    };
     this.f_y = common.find('#beg_factor').val();
-    this.f_a = this.isEnter(this.f_a) ? function(y){return try_funk_y(this.f_a,y);} : default_f_a_funk;
-    this.f_b = this.isEnter(this.f_b) ? function(y){return try_funk_y(this.f_b,y);} : default_f_b_funk;
-    this.f_y = this.isEnter(this.f_y) ? function(x){return try_funk_x(this.f_y,x);} : default_f_y_funk;
+    this.f_a.x = this.isEnter(this.f_a.x) ? function(y,t){return try_funk_x_y_t(this.f_a.x,0,y,t);} : default_f_a_x_2D_funk;
+    this.f_a.y = this.isEnter(this.f_a.y) ? function(x,t){return try_funk_x_y_t(this.f_a.y,x,0,t);} : default_f_a_y_2D_funk;
+    this.f_b.x = this.isEnter(this.f_b.x) ? function(y,t){return try_funk_x_y_t(this.f_b.x,0,y,t);} : default_f_b_x_2D_funk;    
+    this.f_b.y = this.isEnter(this.f_b.y) ? function(x,t){return try_funk_x_y_t(this.f_b.x,x,0,t);} : default_f_b_y_2D_funk;    
+    this.f_y = this.isEnter(this.f_y) ? function(x,y){return try_funk_x_y_t(this.f_y,x,y,0);} : default_f_y_2D_funk;
     this.fun = common.find('#right_side').val();
-    this.fun = this.isEnter(this.fun) ? function(x, y){return try_funk_x_y(this.fun, x, y);} : default_2d_fun;
-    this.h = (this.b.x - this.a.x) / (this.n - 1);
-    this.tau = (this.b.y - this.a.y) / (this.n - 1);
+    this.fun = this.isEnter(this.fun) ? function(x, y, t){return try_funk_x_y_t(this.fun, x, y, t);} : default_2d_fun;
+    this.T = common.find('#T_limit').val();
+    this.T = this.isEnter(this.T) ? +this.T : default_T;
+    this.n2 = common.find('#number_for_t').val();    
+    this.h = {
+        x:(this.b.x - this.a.x) / (this.n - 1),
+        y:(this.b.y - this.a.y) / (this.n - 1),
+    };
+    this.n2 = this.isEnter(this.n2) ? +this.n2 : Math.floor(2 * this.T / this.h.x + 2);
+    this.tau = (this.T) / (this.n2 - 1);    
     this.A_matrix = new Array();
+    this.diff_matrix = new Array();
     this.b_vector = new Array();
     this.answer = new Array();
     this.fi_i = two_direct_fi_i;
@@ -95,22 +108,21 @@ function TwoDimension() {
     this.get_matrix_element = two_dimension_get_matrix_element;
     this.int_cells = two_direct_int_cells;
     this.get_answ = two_dimension_get_answ;
-    this.graph = draw_plot;
+    //this.graph = draw_plot;
 }
 
 function initialize() {
     for (var i = 1; i < this.n-1; ++i) {
         var funk = {value: new Array()};
         
-        for(var k = 0; k < this.n; ++k){
+        for(var k = 0; k < this.n2; ++k){
             funk.value[k] = 0;
         }
         
+        this.A_matrix[i-1] = new Array;
+        this.diff_matrix[i-1] = new Array;    
+        
         for (var j = 0; j < this.n; ++j) {
-            if (j == 0){
-                this.A_matrix[i-1] = new Array;
-                this.diff_matrix[i-1] = new Array;
-            }
             if(j != 0 && j != this.n-1){
                 this.A_matrix[i-1][j-1] = 0;
                 this.diff_matrix[i-1][j-1] = 0;
@@ -129,7 +141,7 @@ function initialize() {
     //теперь, необходимо транспонировать b_vector так, чтобы b_vector[i] соответствовали различные
     //различные правые части в определенный момент времени
     var temp = new Array();
-    for(var i = 0; i < this.n; ++i){
+    for(var i = 0; i < this.n2; ++i){
         temp[i] = new Array();
     }
     for(var i = 0; i < this.b_vector.length; ++i){
@@ -145,17 +157,46 @@ function initialize() {
 function two_dimension_initialize(){
     for (var i = 1; i < this.n-1; ++i)
         for (var k = 1; k < this.n-1; ++k){
-            var funk = {value: 0};
+            var funk = {value: new Array()};
+            
+            for(var j = 0; j < this.n2; ++j){
+                funk.value[j] = 0;
+            }            
+            
+            this.A_matrix[(i-1)*(this.n-2)+k-1] = new Array;
+            this.diff_matrix[(i-1)*(this.n-2)+k-1] = new Array;            
+            
             for (var j = 0; j < this.n; ++j)
                 for (var l = 0; l < this.n; ++l){
-                    if (j == 0 && l == 0)
-                        this.A_matrix[(i-1)*(this.n-2)+k-1] = new Array;
                     if(j != 0 && j != this.n-1 && l != 0 && l != this.n-1)
                         this.A_matrix[(i-1)*(this.n-2)+k-1][(j-1)*(this.n-2)+l-1] = 0;
                     this.get_matrix_element(i, k, j, l, funk);
                 }
             this.b_vector[(i-1)*(this.n-2)+k-1] = funk.value;
-        }    
+        }
+    
+    this.begginary = new Array();
+    
+    for (var i = 0; i < this.n; ++i) {
+        for (var j = 0; j < this.n; ++j) {
+            this.begginary[i*this.n+j] = this.f_y(this.a.x + i * this.h.x, this.a.y + j * this.h.y);
+        }
+    }
+    
+    //теперь, необходимо транспонировать b_vector так, чтобы b_vector[i] соответствовали различные
+    //различные правые части в определенный момент времени
+    var temp = new Array();
+    for(var i = 0; i < this.n2; ++i){
+        temp[i] = new Array();
+    }
+    for(var i = 0; i < this.b_vector.length; ++i){
+        var len = this.b_vector[i].length;
+        for(var j = 0; j < len; ++j){
+            temp[j][i] = this.b_vector[i][j];
+        }
+    }
+    this.b_vector = temp;    
+    
 }
 
 function get_matrix_element(i, j, funk) {
@@ -163,8 +204,7 @@ function get_matrix_element(i, j, funk) {
         //формируем обычную левую часть матрицы для уравнения du/dt=d2u/dx^2+du/dx+u(x,t)+f(x,t)
         if(i != 0 && i != this.n-1 && j != 0 && j != this.n-1)
             this.A_matrix[i-1][j-1] = this.int_cells(i, j, function (x) {
-                return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.diff_fi_i(j, x)*this.fi_i(i, x)+this.fi_i(j, x)*this.fi_i(i, x);
-                //return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);
+                return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.diff_fi_i(j, x)*this.fi_i(i, x) + this.fi_i(j, x)*this.fi_i(i, x);
             });
         //формируем часть при коэфициентах du/dt системы диф. уравнений
         if(i != 0 && i != this.n-1 && j != 0 && j != this.n-1)
@@ -181,16 +221,16 @@ function get_matrix_element(i, j, funk) {
 
         //учитываем краевое условие на левой границе х - в точке а
         if(j == 0)
-            for(var k = 0; k < this.n; ++k){
+            for(var k = 0; k < this.n2; ++k){
                 funk.value[k] -= this.f_a(k * this.tau) * this.int_cells(i, j, function (x) {
-                    return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
+                    return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.diff_fi_i(j, x)*this.fi_i(i, x) + this.fi_i(j, x)*this.fi_i(i, x);          
                 });
             }
         //учитываем краевое условие на правой границе х - в точке b
         if(j == this.n-1)
-            for(var k = 0; k < this.n; ++k){
+            for(var k = 0; k < this.n2; ++k){
                 funk.value[k] -= this.f_b(k * this.tau) * this.int_cells(i, j, function (x) {
-                    return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x);          
+                    return -this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.diff_fi_i(j, x)*this.fi_i(i, x) + this.fi_i(j, x)*this.fi_i(i, x);          
                 }); 
             }
     }
@@ -200,30 +240,55 @@ function get_matrix_element(i, j, funk) {
 
 function two_dimension_get_matrix_element(i1, i2, j1, j2, funk){
     if ((Math.abs(i1 - j1) < 1.01) && (Math.abs(i2 - j2) < 1.01)) {
+        //формируем обычную левую часть матрицы для уравнения du/dt=d2u/dx^2+d2u/dy^2+du/dx+du/dy+u(x,t)+f(x,y,t)
         if(i1 != 0 && i1 != this.n-1 && j1 != 0 && j1 != this.n-1 && i2 != 0 && i2 != this.n-1 && j2 != 0 && j2 != this.n-1)
             this.A_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] = this.int_cells(i1, i2, j1, j2, function (x,y) {
-                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
             });
+        //формируем часть при коэфициентах du/dt системы диф. уравнений
         if(i1 != 0 && i1 != this.n-1 && i2 != 0 && i2 != this.n-1)
-            funk.value += -this.fun(this.a.x + (i1) * this.h, this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+            this.diff_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] = - this.int_cells(i1, i2, j1, j2, function (x,y) {
                 return this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
             });
+        //формируем правую часть системы
+        if(i1 != 0 && i1 != this.n-1 && i2 != 0 && i2 != this.n-1)
+            for(var k = 0; k < this.n; ++k){
+                funk.value[k] += -this.fun(this.a.x + (i1) * this.h.x, this.a.y + (i2) * this.h.y, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+                    return this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+                });
+            }
+        //учитываем краевое условие на левой границе х - в точке а
+        //j2 != 0 && j2 != this.n - 1 это условие необходимо, т.к. в этих точках нужное значение
+        //мы получим чуть ниже при учете граничных условий на груницах y
         if(j1 == 0 && j2 != 0 && j2 != this.n - 1)
-            funk.value -= this.f_a(this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-            });        
+            for(var k = 0; k < this.n2; ++k){
+                funk.value[k] -= this.f_a.x(this.a.y + (i2) * this.h.y, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+                    return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+                });        
+            }
+        //учитываем краевое условие на правой границе х - в точке b
+        //j2 != 0 && j2 != this.n - 1 это условие необходимо, т.к. в этих точках нужное значение
+        //мы получим чуть ниже при учете граничных условий на груницах y        
         if(j1 == this.n - 1 && j2 != 0 && j2 != this.n - 1)
-            funk.value -= this.f_b(this.a.y + (i2) * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-            }); 
+            for(var k = 0; k < this.n2; ++k){
+                funk.value[k] -= this.f_b.x(this.a.y + (i2) * this.h.y, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+                    return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+                }); 
+            }
+        //учитываем краевое условие на левой границе y - в точке а
         if(j2 == 0)
-            funk.value -= this.f_y(this.a.x + (i1) * this.h) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-            });  
+            for(var k = 0; k < this.n2; ++k){
+                funk.value[k] -= this.f_a.y(this.a.x + (i1) * this.h.x, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+                    return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+                });  
+            }
+        //учитываем краевое условие на правой границе y - в точке b
         if(j2 == this.n - 1)
-            funk.value -= default_f_y_funk2(this.a.x + (i1) * this.h) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-            });  
+            for(var k = 0; k < this.n2; ++k){
+                funk.value[k] -= this.f_b.y(this.a.x + (i1) * this.h.x, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
+                    return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+                });  
+            }
     }
     else
         return 0;
@@ -241,16 +306,16 @@ function one_direct_fi_i(i, x) {
 }
 
 function two_direct_fi_i(i, j, x, y) {
-    var xi = this.a.x + i * this.h;
-    var yi = this.a.y + j * this.tau;
-    if ((x > xi - this.h && x <= xi) && (y > yi - this.tau && y <= yi))
-        return (x - xi + this.h) / (this.h) * (y - yi + this.tau) / (this.tau);
-    else if ((x > xi && x <= xi + this.h) && (y > yi - this.tau && y <= yi))
-        return (xi + this.h - x) / (this.h) * (y - yi + this.tau) / (this.tau);
-    else if ((x > xi - this.h && x <= xi) && (y > yi && y <= yi + this.tau))
-        return (x - xi + this.h) / (this.h) * (yi + this.tau - y) / (this.tau);
-    else if ((x > xi && x <= xi + this.h) && (y > yi && y <= yi + this.tau))
-        return (xi + this.h - x) / (this.h) * (yi + this.tau - y) / (this.tau);
+    var xi = this.a.x + i * this.h.x;
+    var yi = this.a.y + j * this.h.y;
+    if ((x > xi - this.h.x && x <= xi) && (y > yi - this.h.y && y <= yi))
+        return (x - xi + this.h.x) / (this.h.x) * (y - yi + this.h.y) / (this.h.y);
+    else if ((x > xi && x <= xi + this.h.x) && (y > yi - this.h.y && y <= yi))
+        return (xi + this.h.x - x) / (this.h.x) * (y - yi + this.h.y) / (this.h.y);
+    else if ((x > xi - this.h.x && x <= xi) && (y > yi && y <= yi + this.h.y))
+        return (x - xi + this.h.x) / (this.h.x) * (yi + this.h.y - y) / (this.h.y);
+    else if ((x > xi && x <= xi + this.h.x) && (y > yi && y <= yi + this.h.y))
+        return (xi + this.h.x - x) / (this.h.x) * (yi + this.h.y - y) / (this.h.y);
     else
         return 0;
 }
@@ -267,31 +332,31 @@ function one_direct_diff_fi_i(i, x) {
 }
 
 function two_direct_diff_fi_i_x(i, j, x, y){
-    var xi = this.a.x + i * this.h;
-    var yi = this.a.y + j * this.tau;
-    if ((x > xi - this.h && x <= xi) && (y > yi - this.tau && y <= yi))
-        return 1 / (this.h) * (y - yi + this.tau) / (this.tau);
-    else if ((x > xi && x <= xi + this.h) && (y > yi - this.tau && y <= yi))
-        return -1 / (this.h) * (y - yi + this.tau) / (this.tau);
-    else if ((x > xi - this.h && x <= xi) && (y > yi && y <= yi + this.tau))
-        return 1 / (this.h) * (yi + this.tau - y) / (this.tau);
-    else if ((x > xi && x <= xi + this.h) && (y > yi && y <= yi + this.tau))
-        return -1 / (this.h) * (yi + this.tau - y) / (this.tau);
+    var xi = this.a.x + i * this.h.x;
+    var yi = this.a.y + j * this.h.y;
+    if ((x > xi - this.h.x && x <= xi) && (y > yi - this.h.y && y <= yi))
+        return 1 / (this.h.x) * (y - yi + this.h.y) / (this.h.y);
+    else if ((x > xi && x <= xi + this.h.x) && (y > yi - this.h.y && y <= yi))
+        return -1 / (this.h.x) * (y - yi + this.h.y) / (this.h.y);
+    else if ((x > xi - this.h.x && x <= xi) && (y > yi && y <= yi + this.h.y))
+        return 1 / (this.h.x) * (yi + this.h.y - y) / (this.h.y);
+    else if ((x > xi && x <= xi + this.h.x) && (y > yi && y <= yi + this.h.y))
+        return -1 / (this.h.x) * (yi + this.h.y - y) / (this.h.y);
     else
         return 0;    
 }
 
 function two_direct_diff_fi_i_y(i, j, x, y){
-    var xi = this.a.x + i * this.h;
-    var yi = this.a.y + j * this.tau;
-    if ((x > xi - this.h && x <= xi) && (y > yi - this.tau && y <= yi))
-        return (x - xi + this.h) / (this.h) * 1 / (this.tau);
-    else if ((x > xi && x <= xi + this.h) && (y > yi - this.tau && y <= yi))
-        return (xi + this.h - x) / (this.h) * 1 / (this.tau);
-    else if ((x > xi - this.h && x <= xi) && (y > yi && y <= yi + this.tau))
-        return (x - xi + this.h) / (this.h) * (-1) / (this.tau);
-    else if ((x > xi && x <= xi + this.h) && (y > yi && y <= yi + this.tau))
-        return (xi + this.h - x) / (this.h) * (-1) / (this.tau);
+    var xi = this.a.x + i * this.h.x;
+    var yi = this.a.y + j * this.h.y;
+    if ((x > xi - this.h.x && x <= xi) && (y > yi - this.h.y && y <= yi))
+        return (x - xi + this.h.x) / (this.h.x) * 1 / (this.h.y);
+    else if ((x > xi && x <= xi + this.h.x) && (y > yi - this.h.y && y <= yi))
+        return (xi + this.h.x - x) / (this.h.x) * 1 / (this.h.y);
+    else if ((x > xi - this.h.x && x <= xi) && (y > yi && y <= yi + this.h.y))
+        return (x - xi + this.h.x) / (this.h.x) * (-1) / (this.h.y);
+    else if ((x > xi && x <= xi + this.h.x) && (y > yi && y <= yi + this.h.y))
+        return (xi + this.h.x - x) / (this.h.x) * (-1) / (this.h.y);
     else
         return 0;   
 }
@@ -307,7 +372,7 @@ function one_direct_int_cells(ii, jj, f) {
         xe = xb + this.h;
         xq = xb - this.h;
     }
-    var num_stong = 100;
+    var num_stong = 4000;
     var hxx = Math.abs(xq - xe) / (num_stong - 1);
     var s = 0;
     this.f = f;
@@ -319,25 +384,25 @@ function one_direct_int_cells(ii, jj, f) {
 }
 
 function two_direct_int_cells(x1, y1, x2, y2, f) {
-    var xa = this.a.x + x1 * this.h;
-    var xb = this.a.x + x2 * this.h;
-    var ya = this.a.y + y1 * this.tau;
-    var yb = this.a.y + y2 * this.tau;
+    var xa = this.a.x + x1 * this.h.x;
+    var xb = this.a.x + x2 * this.h.x;
+    var ya = this.a.y + y1 * this.h.y;
+    var yb = this.a.y + y2 * this.h.y;
     var xe, xq;
     xq = (xa < xb) ? xa : xb;
     if (x1 !== x2)
         xe = x1 > x2 ? (xa) : (xb);
     else {
-        xe = xb + this.h;
-        xq = xb - this.h;
+        xe = xb + this.h.x;
+        xq = xb - this.h.x;
     }
     var ye, yq;
     yq = (ya < yb) ? ya : yb;
     if (y1 !== y2)
         ye = y1 > y2 ? (ya) : (yb);
     else {
-        ye = yb + this.tau;
-        yq = yb - this.tau;
+        ye = yb + this.h.y;
+        yq = yb - this.h.y;
     }    
     var num_stong = 100;
     var hxx = Math.abs(xq - xe) / (num_stong - 1);
@@ -356,30 +421,31 @@ function two_direct_int_cells(x1, y1, x2, y2, f) {
 
 function get_answ(x, t) {
     var s = 0;
-    for (var i = 0; i < this.answer[0].length; ++i) {
+    var len = this.answer[t].length;
+    for (var i = 0; i < len; ++i) {
         s += this.answer[t][i] * this.fi_i(i+1, x);
     }
-    s += this.f_a(t) * this.fi_i(0, x) + this.f_b(t) * this.fi_i(this.n-1, x);
+    s += this.f_a(t * this.tau) * this.fi_i(0, x) + this.f_b(t * this.tau) * this.fi_i(this.n-1, x);
     return s;
 }
 
-function two_dimension_get_answ(x, y) {
+function two_dimension_get_answ(x, y, t) {
     var s = 0;
     var add = +1;
     for (var i = 0; i < this.answer.length; ++i) {
-        s += this.answer[i] * this.fi_i(Math.floor((i)/(this.n-2))+add, (i)%(this.n-2)+add, x, y);
+        s += this.answer[t][i] * this.fi_i(Math.floor((i)/(this.n-2))+add, (i)%(this.n-2)+add, x, y);
     }
     for( i=0 ; i < this.n ; ++i){
-        s += this.f_y(x) * this.fi_i( i, 0, x, y);
-}
-    for( i=1 ; i < this.n ; ++i){
-        s += this.f_a(y) * this.fi_i( 0, i, x, y);
+        s += this.f_a.y(x, t * this.tau) * this.fi_i( i, 0, x, y);
     }
     for( i=1 ; i < this.n ; ++i){
-        s += this.f_b(y) * this.fi_i( this.n-1, i, x, y);
+        s += this.f_a.x(y, t * this.tau) * this.fi_i( 0, i, x, y);
+    }
+    for( i=1 ; i < this.n ; ++i){
+        s += this.f_b.x(y, t * this.tau) * this.fi_i( this.n-1, i, x, y);
     }   
     for( i=1 ; i < this.n-1 ; ++i){
-        s += default_f_y_funk2(x) * this.fi_i( i, this.n - 1, x, y);
+        s += this.f_b.y(x, t * this.tau) * this.fi_i( i, this.n - 1, x, y);
     }
     return s;
 }
@@ -415,6 +481,10 @@ function try_funk_y(str, y) {
 }
 
 function try_funk_x_y(str, x,  y) {
+    return eval(str);
+}
+
+function try_funk_x_y_t(str, x,  y, t) {
     return eval(str);
 }
 

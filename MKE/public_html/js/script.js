@@ -29,10 +29,10 @@ $(document).ready(function () {
         }*/
         for(var i = 0, xx = mke.a; i < nn; ++i){
             for(var j = 0, yy = 0; j < nn; ++j){
-                var temp = function(xx, yy){return xx*yy+5*xx+5*yy+10;};
+                var temp = function(xx, yy){return xx*xx*xx+yy*yy*yy+xx*yy+5*xx+5*yy+10;};
                 if(max<Math.abs(temp(xx, yy)-mke.get_answ(xx, j)))
                     max = Math.abs(temp(xx, yy)-mke.get_answ(xx, j));
-                if(Math.abs(temp(xx, yy)-mke.get_answ(xx, j))>10)
+                if( Math.abs(temp(xx, yy)-mke.get_answ(xx, j)) < 10)
                 console.log(Math.abs(temp(xx, yy)-mke.get_answ(xx, j)) + ' ' + mke.get_answ(xx, j) + ' ' + temp(xx, yy) + ' ' + xx + ' ' + yy);                
                 yy += tt;
             }
