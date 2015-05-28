@@ -1,21 +1,27 @@
-var default_N = 10;
+var default_N = 20;
 var default_A = 0;
 var default_B = 5;
 var default_T = 2;
 var default_f_a_1D_funk = function(y){return y*y*y+5*y+10;};
 var default_f_b_1D_funk = function(y){return y*y*y+10*y+160;};
 var default_f_y_1D_funk = function(x){return x*x*x+5*x+10;};
-var default_f_a_x_2D_funk = function(y,t){return t*y*y*y+5*y+10;};
-var default_f_a_y_2D_funk = function(x,t){return t*x*x*x+5*x+10;};
-var default_f_b_x_2D_funk = function(y,t){return t*y*y*y+10*y+160;};
-var default_f_b_y_2D_funk = function(x,t){return t*x*x*x+10*x+160;};
-var default_f_y_2D_funk = function(x,y){return y*x*x*x+5*x+10;};
-//var default_2d_fun = function(x, y){return 1;};
+var default_f_a_x_2D_funk = function(y,t){return y*y*y+t*t*t+5*y+5*t+10;};
+var default_f_a_y_2D_funk = function(x,t){return x*x*x+t*t*t+5*x+5*t+10;};
+var default_f_b_x_2D_funk = function(y,t){return y*y*y+t*t*t+5*y*t+5*y+5*t+160;};
+var default_f_b_y_2D_funk = function(x,t){return x*x*x+t*t*t+5*x*t+5*x+5*t+160;};
+var default_f_y_2D_funk = function(x,y){return x*x*x+y*y*y+5*x+5*y+10;};
+
+/*var default_f_a_x_2D_funk = function(y,t){return 1;};
+var default_f_a_y_2D_funk = function(x,t){return 1;};
+var default_f_b_x_2D_funk = function(y,t){return 1;};
+var default_f_b_y_2D_funk = function(x,t){return 1;};
+var default_f_y_2D_funk = function(x,y){return 1;};*/
 //var default_2d_fun = function(x, y){return x*x-x-y-x*y-x*x*y;};
 //var default_2d_fun = function(x, y){return (x-5)*x-2*y+10-(x-5)*(y-5)-(y-5)*x-(x-5)*(y-5)*x;};
 //var default_2d_fun = function(x, y){return (x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
 var default_1d_fun = function(x, y){return 3*y*y+x+5-1*(3*x*x+y+5)-6*x-1*(x*x*x+y*y*y+x*y+5*x+5*y+10);};
-var default_2d_fun = function(x, y, t){return t*(x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
+var default_2d_fun = function(x, y, t){return 3*t*t+x*y+5-(3*x*x+y*t+5)-(3*y*y+x*t+5)-6*x-6*y-(x*x*x+y*y*y+t*t*t+x*y*t+5*x+5*y+5*t+10);};
+//var default_2d_fun = function(x, y, t){return -1;};
 
 function OneDimension() {
     this.el = $('#main_form');
@@ -108,7 +114,96 @@ function TwoDimension() {
     this.get_matrix_element = two_dimension_get_matrix_element;
     this.int_cells = two_direct_int_cells;
     this.get_answ = two_dimension_get_answ;
+    this.indexed_integrals = new Array();
+    this.integral_indexing = two_dimension_integral_indexing;
     //this.graph = draw_plot;
+}
+
+function two_dimension_integral_indexing(){
+    //Функция создана для значительного повышения производительности, 
+    //она генерирует массив this.indexed_integrals в котором заранее посчитаны все варианты
+    //интегралов, которые могут быть
+    var val1=[],val2=[];
+    for(var i = -1; i < 2; ++i){
+        val1[i] = new Array();
+        val2[i] = new Array();
+    }
+    val1[0] = this.int_cells(0, 0, 1, 1, function (x,y) {
+        var i1 = 0, i2 = 0, j1 = 1, j2 = 1;
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+    });
+    val1[1] = this.int_cells(2, 2, 1, 1, function (x,y) {
+        var i1 = 2, i2 = 2, j1 = 1, j2 = 1;
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+    });
+    val1[2] = this.int_cells(0, 2, 1, 1, function (x,y) {
+        var i1 = 0, i2 = 2, j1 = 1, j2 = 1;
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+    });
+    val1[3] = this.int_cells(1, 1, 1, 1, function (x,y) {
+        var i1 = 1, i2 = 1, j1 = 1, j2 = 1;
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+    });
+    val1[4] = this.int_cells(1, 0, 1, 1, function (x,y) {
+        var i1 = 1, i2 = 0, j1 = 1, j2 = 1;
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+    });
+    val1[5] = this.int_cells(1, 2, 1, 1, function (x,y) {
+        var i1 = 1, i2 = 2, j1 = 1, j2 = 1;
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+    });    
+    
+    val2[0] = this.int_cells(0, 0, 1, 1, function (x,y) {
+        var i1 = 0, i2 = 0, j1 = 1, j2 = 1;
+        return this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+    });
+    val2[1] = this.int_cells(0, 1, 1, 1, function (x,y) {
+        var i1 = 0, i2 = 1, j1 = 1, j2 = 1;
+        return this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+    });
+    val2[2] = this.int_cells(1, 1, 1, 1, function (x,y) {
+        var i1 = 1, i2 = 1, j1 = 1, j2 = 1;
+        return this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+    });
+    
+    this.indexed_integrals = new Array();
+    //массив this.indexed_integrals[0] содержит все возможные интегралы 
+    //для матрицы левых частей диф.уравнения, граничных условий
+    this.indexed_integrals[0] = new Array();
+    //массив this.indexed_integrals[0] содержит все возможные интегралы 
+    //для вектора правых частей диф.уравнения, матрицы производных по t   
+    this.indexed_integrals[1] = new Array();
+    
+    for(var i = -1; i < 2; ++i){
+        this.indexed_integrals[0][i] = new Array();
+        for(var j = -1; j < 2; ++j){
+            if(i==-1 && j == -1)
+                this.indexed_integrals[0][i][j] = val1[0];
+            else if(i==1 && j == 1)
+                this.indexed_integrals[0][i][j] = val1[1];
+            else if((i==-1 && j == 1) || (i==1 && j == -1))
+                this.indexed_integrals[0][i][j] = val1[2];
+            else if(i==0 && j == 0)
+                this.indexed_integrals[0][i][j] = val1[3];
+            else if((i==-1 && j == 0) || (i==0 && j == -1))
+                this.indexed_integrals[0][i][j] = val1[4];          
+            else if((i==1 && j == 0) || (i==0 && j == 1))
+                this.indexed_integrals[0][i][j] = val1[5];                 
+        }
+    }
+    
+    for(var i = -1; i < 2; ++i){
+        this.indexed_integrals[1][i] = new Array();
+        for(var j = -1; j < 2; ++j){
+            if((i !== 0) && (j !== 0))
+                this.indexed_integrals[1][i][j] = val2[0];
+            else if((i === 0 && j !== 0 ) || (j === 0 && i !== 0 ))
+                this.indexed_integrals[1][i][j] = val2[1];
+            else
+                this.indexed_integrals[1][i][j] = val2[2];
+        }
+    }    
+    
 }
 
 function initialize() {
@@ -134,7 +229,7 @@ function initialize() {
     
     this.begginary = new Array();
     
-    for (var i = 0; i < this.n; ++i) {
+    for (var i = 1; i < this.n -1; ++i) {
         this.begginary[i] = this.f_y(this.a + i * this.h);
     }
     
@@ -155,6 +250,9 @@ function initialize() {
 }
 
 function two_dimension_initialize(){
+    
+    this.integral_indexing();
+
     for (var i = 1; i < this.n-1; ++i)
         for (var k = 1; k < this.n-1; ++k){
             var funk = {value: new Array()};
@@ -168,8 +266,10 @@ function two_dimension_initialize(){
             
             for (var j = 0; j < this.n; ++j)
                 for (var l = 0; l < this.n; ++l){
-                    if(j != 0 && j != this.n-1 && l != 0 && l != this.n-1)
+                    if(j != 0 && j != this.n-1 && l != 0 && l != this.n-1){
                         this.A_matrix[(i-1)*(this.n-2)+k-1][(j-1)*(this.n-2)+l-1] = 0;
+                        this.diff_matrix[(i-1)*(this.n-2)+k-1][(j-1)*(this.n-2)+l-1] = 0;
+                    }
                     this.get_matrix_element(i, k, j, l, funk);
                 }
             this.b_vector[(i-1)*(this.n-2)+k-1] = funk.value;
@@ -177,9 +277,9 @@ function two_dimension_initialize(){
     
     this.begginary = new Array();
     
-    for (var i = 0; i < this.n; ++i) {
-        for (var j = 0; j < this.n; ++j) {
-            this.begginary[i*this.n+j] = this.f_y(this.a.x + i * this.h.x, this.a.y + j * this.h.y);
+    for (var i = 1; i < this.n - 1; ++i) {
+        for (var j = 1; j < this.n - 1; ++j) {
+            this.begginary[(i-1)*(this.n-2)+j-1] = this.f_y(this.a.x + i * this.h.x, this.a.y + j * this.h.y);
         }
     }
     
@@ -242,53 +342,49 @@ function two_dimension_get_matrix_element(i1, i2, j1, j2, funk){
     if ((Math.abs(i1 - j1) < 1.01) && (Math.abs(i2 - j2) < 1.01)) {
         //формируем обычную левую часть матрицы для уравнения du/dt=d2u/dx^2+d2u/dy^2+du/dx+du/dy+u(x,t)+f(x,y,t)
         if(i1 != 0 && i1 != this.n-1 && j1 != 0 && j1 != this.n-1 && i2 != 0 && i2 != this.n-1 && j2 != 0 && j2 != this.n-1)
-            this.A_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] = this.int_cells(i1, i2, j1, j2, function (x,y) {
-                return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-            });
+            this.A_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] = this.indexed_integrals[0][i1-j1][i2-j2];
         //формируем часть при коэфициентах du/dt системы диф. уравнений
-        if(i1 != 0 && i1 != this.n-1 && i2 != 0 && i2 != this.n-1)
-            this.diff_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] = - this.int_cells(i1, i2, j1, j2, function (x,y) {
-                return this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
-            });
+        if(i1 != 0 && i1 != this.n-1 && j1 != 0 && j1 != this.n-1 && i2 != 0 && i2 != this.n-1 && j2 != 0 && j2 != this.n-1)
+            this.diff_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] = - this.indexed_integrals[1][i1-j1][i2-j2];  ;
         //формируем правую часть системы
-        if(i1 != 0 && i1 != this.n-1 && i2 != 0 && i2 != this.n-1)
-            for(var k = 0; k < this.n; ++k){
-                funk.value[k] += -this.fun(this.a.x + (i1) * this.h.x, this.a.y + (i2) * this.h.y, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-                    return this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
-                });
+        if(i1 != 0 && i1 != this.n-1 && i2 != 0 && i2 != this.n-1){
+            var hard_val = this.indexed_integrals[1][i1-j1][i2-j2];  
+            for(var k = 0; k < this.n2; ++k){
+                funk.value[k] -= this.fun(this.a.x + (i1) * this.h.x, this.a.y + (i2) * this.h.y, k * this.tau) * hard_val;
             }
+        }
         //учитываем краевое условие на левой границе х - в точке а
         //j2 != 0 && j2 != this.n - 1 это условие необходимо, т.к. в этих точках нужное значение
-        //мы получим чуть ниже при учете граничных условий на груницах y
-        if(j1 == 0 && j2 != 0 && j2 != this.n - 1)
+        //мы получим чуть ниже при учете граничных условий на границах y
+        if(j1 == 0 && j2 != 0 && j2 != this.n - 1){
+            var hard_val = this.indexed_integrals[0][i1-j1][i2-j2];   
             for(var k = 0; k < this.n2; ++k){
-                funk.value[k] -= this.f_a.x(this.a.y + (i2) * this.h.y, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-                    return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-                });        
+                funk.value[k] -= this.f_a.x(this.a.y + (i2) * this.h.y, k * this.tau) * hard_val;      
             }
+        }
         //учитываем краевое условие на правой границе х - в точке b
         //j2 != 0 && j2 != this.n - 1 это условие необходимо, т.к. в этих точках нужное значение
-        //мы получим чуть ниже при учете граничных условий на груницах y        
-        if(j1 == this.n - 1 && j2 != 0 && j2 != this.n - 1)
+        //мы получим чуть ниже при учете граничных условий на границах y        
+        if(j1 == this.n - 1 && j2 != 0 && j2 != this.n - 1){
+            var hard_val = this.indexed_integrals[0][i1-j1][i2-j2]; 
             for(var k = 0; k < this.n2; ++k){
-                funk.value[k] -= this.f_b.x(this.a.y + (i2) * this.h.y, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-                    return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-                }); 
+                funk.value[k] -= this.f_b.x(this.a.y + (i2) * this.h.y, k * this.tau) * hard_val;
             }
+        }
         //учитываем краевое условие на левой границе y - в точке а
-        if(j2 == 0)
+        if(j2 == 0){
+            var hard_val = this.indexed_integrals[0][i1-j1][i2-j2];  
             for(var k = 0; k < this.n2; ++k){
-                funk.value[k] -= this.f_a.y(this.a.x + (i1) * this.h.x, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-                    return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-                });  
+                funk.value[k] -= this.f_a.y(this.a.x + (i1) * this.h.x, k * this.tau) * hard_val;
             }
+        }
         //учитываем краевое условие на правой границе y - в точке b
-        if(j2 == this.n - 1)
+        if(j2 == this.n - 1){
+            var hard_val = this.indexed_integrals[0][i1-j1][i2-j2];  
             for(var k = 0; k < this.n2; ++k){
-                funk.value[k] -= this.f_b.y(this.a.x + (i1) * this.h.x, k * this.tau) * this.int_cells(i1, i2, j1, j2, function (x,y) {
-                    return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
-                });  
+                funk.value[k] -= this.f_b.y(this.a.x + (i1) * this.h.x, k * this.tau) * hard_val;
             }
+        }
     }
     else
         return 0;
@@ -404,7 +500,7 @@ function two_direct_int_cells(x1, y1, x2, y2, f) {
         ye = yb + this.h.y;
         yq = yb - this.h.y;
     }    
-    var num_stong = 100;
+    var num_stong = 4000;
     var hxx = Math.abs(xq - xe) / (num_stong - 1);
     var hyy = Math.abs(yq - ye) / (num_stong - 1);
     var s = 0;
@@ -432,7 +528,7 @@ function get_answ(x, t) {
 function two_dimension_get_answ(x, y, t) {
     var s = 0;
     var add = +1;
-    for (var i = 0; i < this.answer.length; ++i) {
+    for (var i = 0; i < this.answer[t].length; ++i) {
         s += this.answer[t][i] * this.fi_i(Math.floor((i)/(this.n-2))+add, (i)%(this.n-2)+add, x, y);
     }
     for( i=0 ; i < this.n ; ++i){
@@ -492,7 +588,7 @@ function DiffSchemeSolve( A, C, f, T, tau, beg){
     var answer = [];
     answer[0] = new Array();
     for(var i = 0; i < A.length; ++i){
-        answer[0][i] = beg[i+1];
+        answer[0][i] = beg[i];
     }
     for(var i = 1; i < T; ++i){
         answer[i] = new Array();
