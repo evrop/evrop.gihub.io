@@ -1,4 +1,4 @@
-var default_N = 20;
+var default_N = 15;
 var default_A = 0;
 var default_B = 5;
 var default_T = 2;
@@ -11,16 +11,8 @@ var default_f_b_x_2D_funk = function(y,t){return y*y*y+t*t*t+5*y*t+5*y+5*t+160;}
 var default_f_b_y_2D_funk = function(x,t){return x*x*x+t*t*t+5*x*t+5*x+5*t+160;};
 var default_f_y_2D_funk = function(x,y){return x*x*x+y*y*y+5*x+5*y+10;};
 
-/*var default_f_a_x_2D_funk = function(y,t){return 1;};
-var default_f_a_y_2D_funk = function(x,t){return 1;};
-var default_f_b_x_2D_funk = function(y,t){return 1;};
-var default_f_b_y_2D_funk = function(x,t){return 1;};
-var default_f_y_2D_funk = function(x,y){return 1;};*/
-//var default_2d_fun = function(x, y){return x*x-x-y-x*y-x*x*y;};
-//var default_2d_fun = function(x, y){return (x-5)*x-2*y+10-(x-5)*(y-5)-(y-5)*x-(x-5)*(y-5)*x;};
-//var default_2d_fun = function(x, y){return (x-5)*(y-5)*(x-y-x*y)+x*y*(x-y)-2*y*y+10*y;};
 var default_1d_fun = function(x, y){return 3*y*y+x+5-1*(3*x*x+y+5)-6*x-1*(x*x*x+y*y*y+x*y+5*x+5*y+10);};
-var default_2d_fun = function(x, y, t){return 3*t*t+x*y+5-(3*x*x+y*t+5)-(3*y*y+x*t+5)-6*x-6*y-(x*x*x+y*y*y+t*t*t+x*y*t+5*x+5*y+5*t+10);};
+var default_2d_fun = function(x, y, t){return 3*t*t+x*y+5-0.25*(3*x*x+y*t+5)-0.25*(3*y*y+x*t+5)-6*x-6*y+0.1*(x*x*x+y*y*y+t*t*t+x*y*t+5*x+5*y+5*t+10);};
 //var default_2d_fun = function(x, y, t){return -1;};
 
 function OneDimension() {
@@ -119,6 +111,130 @@ function TwoDimension() {
     //this.graph = draw_plot;
 }
 
+function TwoDimensionTriangle() {
+    this.el = $('#main_form');
+    var common = this.el.find('.common_settings');
+    this.isEnter = isEnter;
+    this.n = common.find('#number').val();
+    this.n = this.isEnter(this.n) ? +this.n : default_N;
+    this.a = {
+        x:common.find('#left_border_1').val(),
+        y:common.find('#left_border_2').val(),
+    };
+    this.a.x = this.isEnter(this.a.x) ? +this.a.x : default_A;
+    this.a.y = this.isEnter(this.a.y) ? +this.a.y : default_A;
+    this.b = {
+        x:common.find('#right_border_1').val(),
+        y:common.find('#right_border_2').val(),
+    };
+    this.b.x = this.isEnter(this.b.x) ? +this.b.x : default_B;
+    this.b.y = this.isEnter(this.b.y) ? +this.b.y : default_B;
+    this.f_a = {
+        x:common.find('#left_border_x_factor').val(),
+        y:common.find('#left_border_y_factor').val(),
+    };
+    this.f_b = {
+        x:common.find('#right_border_x_factor').val(),
+        y:common.find('#right_border_y_factor').val(),
+    };
+    this.f_y = common.find('#beg_factor').val();
+    this.f_a.x = this.isEnter(this.f_a.x) ? function(y,t){return try_funk_x_y_t(this.f_a.x,0,y,t);} : default_f_a_x_2D_funk;
+    this.f_a.y = this.isEnter(this.f_a.y) ? function(x,t){return try_funk_x_y_t(this.f_a.y,x,0,t);} : default_f_a_y_2D_funk;
+    this.f_b.x = this.isEnter(this.f_b.x) ? function(y,t){return try_funk_x_y_t(this.f_b.x,0,y,t);} : default_f_b_x_2D_funk;    
+    this.f_b.y = this.isEnter(this.f_b.y) ? function(x,t){return try_funk_x_y_t(this.f_b.x,x,0,t);} : default_f_b_y_2D_funk;    
+    this.f_y = this.isEnter(this.f_y) ? function(x,y){return try_funk_x_y_t(this.f_y,x,y,0);} : default_f_y_2D_funk;
+    this.fun = common.find('#right_side').val();
+    this.fun = this.isEnter(this.fun) ? function(x, y, t){return try_funk_x_y_t(this.fun, x, y, t);} : default_2d_fun;
+    this.T = common.find('#T_limit').val();
+    this.T = this.isEnter(this.T) ? +this.T : default_T;
+    this.n2 = common.find('#number_for_t').val();    
+    this.h = {
+        x:(this.b.x - this.a.x) / (this.n - 1),
+        y:(this.b.y - this.a.y) / (this.n - 1),
+    };
+    this.n2 = this.isEnter(this.n2) ? +this.n2 : Math.floor(2 * this.T / this.h.x + 2);
+    this.tau = (this.T) / (this.n2 - 1);    
+    this.A_matrix = new Array();
+    this.diff_matrix = new Array();
+    this.b_vector = new Array();
+    this.answer = new Array();
+    this.nodes = new Array();
+    this.finite_element_nodes = new Array();
+    this.nodes_arrays_generate = nodes_arrays_generate;
+    
+    this.fi_i = {
+        main:triangle_main_fi_i,
+        less:triangle_less_fi_i,
+        more:triangle_more_fi_i
+    };
+    
+    this.diff_fi_i_x = {
+        main:triangle_main_fi_i_x,
+        less:triangle_less_fi_i_x,
+        more:triangle_more_fi_i_x
+    };
+    
+    this.diff_fi_i_y = {
+        main:triangle_main_fi_i_y,
+        less:triangle_less_fi_i_y,
+        more:triangle_more_fi_i_y
+    };
+    
+    this.init_system = two_dimension_triangle_initialize;
+    //this.get_matrix_element = two_dimension_get_matrix_element;
+    this.int_cells = triangle_int_cells;
+    this.get_answ = triangle_get_answ;
+    this.indexed_integrals = new Array();
+    this.integral_indexing = two_dimension_integral_indexing;
+    //this.graph = draw_plot;
+    this.del_lines = del_lines;
+    this.correct_answer = correct_answer;
+}
+
+function nodes_arrays_generate(){
+    var len = this.n * this.n;
+    for(var i = 0; i < len; ++i){
+        this.nodes[i] = {};
+        this.nodes[i].y = this.a.y + Math.floor(i / this.n) * this.h.y;
+        this.nodes[i].x = this.a.x + i % this.n * this.h.x;
+    }
+    
+    var len2 = (this.n - 1) * (this.n - 1) * 2;
+    
+    for(var i = 0; i < len2; ++i){
+        this.finite_element_nodes[i] = new Array();
+        for(var j = 0; j < len; ++j)
+            this.finite_element_nodes[i][j] = 0;
+        if(i % 2 === 0){
+            var ti_1 = Math.floor(i / 2 / (this.n - 1));
+            var tj_1 = Math.floor(i / 2 % (this.n - 1));
+            //Если узел "главный", т е в нем функция возвращает единицу, устанавливаем номер в значение
+            //'main', 'less'-следующий против часовой стрелки, 'more'-следующий за 'less' 
+            //против часовой стрелки
+            this.finite_element_nodes[i][ti_1 * this.n + tj_1] = 1;
+            this.finite_element_nodes[i][(ti_1+1) * this.n + tj_1] = 1;
+            this.finite_element_nodes[i][(ti_1+1) * this.n + tj_1 + 1] = 1;
+            this.finite_element_nodes[i]['main'] = (ti_1+1) * this.n + tj_1;
+            this.finite_element_nodes[i]['less'] = ti_1 * this.n + tj_1;            
+            this.finite_element_nodes[i]['more'] = (ti_1+1) * this.n + tj_1 + 1;
+        }
+        else{
+            //Если узел "главный", т е в нем функция возвращает единицу, устанавливаем номер в значение
+            //'main', 'less'-следующий против часовой стрелки, 'more'-следующий за 'less' 
+            //против часовой стрелки
+            var ti_1 = Math.floor((i - 1) / 2 / (this.n - 1));
+            var tj_1 = Math.floor((i - 1) / 2 % (this.n - 1));
+            this.finite_element_nodes[i][ti_1 * this.n + tj_1] = 1;
+            this.finite_element_nodes[i][ti_1 * this.n + tj_1 + 1] = 1;
+            this.finite_element_nodes[i][(ti_1+1) * this.n + tj_1 + 1] = 1;       
+            this.finite_element_nodes[i]['main'] = ti_1 * this.n + tj_1 + 1;
+            this.finite_element_nodes[i]['less'] = (ti_1+1) * this.n + tj_1 + 1;    
+            this.finite_element_nodes[i]['more'] = ti_1 * this.n + tj_1;                           
+        }
+        
+    }
+}
+
 function two_dimension_integral_indexing(){
     //Функция создана для значительного повышения производительности, 
     //она генерирует массив this.indexed_integrals в котором заранее посчитаны все варианты
@@ -130,27 +246,27 @@ function two_dimension_integral_indexing(){
     }
     val1[0] = this.int_cells(0, 0, 1, 1, function (x,y) {
         var i1 = 0, i2 = 0, j1 = 1, j2 = 1;
-        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+0.25*this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+0.25*this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)-0.1*this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
     });
     val1[1] = this.int_cells(2, 2, 1, 1, function (x,y) {
         var i1 = 2, i2 = 2, j1 = 1, j2 = 1;
-        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+0.25*this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+0.25*this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)-0.1*this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
     });
     val1[2] = this.int_cells(0, 2, 1, 1, function (x,y) {
         var i1 = 0, i2 = 2, j1 = 1, j2 = 1;
-        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+0.25*this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+0.25*this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)-0.1*this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
     });
     val1[3] = this.int_cells(1, 1, 1, 1, function (x,y) {
         var i1 = 1, i2 = 1, j1 = 1, j2 = 1;
-        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+0.25*this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+0.25*this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)-0.1*this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
     });
     val1[4] = this.int_cells(1, 0, 1, 1, function (x,y) {
         var i1 = 1, i2 = 0, j1 = 1, j2 = 1;
-        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+0.25*this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+0.25*this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)-0.1*this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
     });
     val1[5] = this.int_cells(1, 2, 1, 1, function (x,y) {
         var i1 = 1, i2 = 2, j1 = 1, j2 = 1;
-        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
+        return -this.diff_fi_i_x(j1,j2,x,y)*this.diff_fi_i_x(i1,i2,x,y)-this.diff_fi_i_y(j1,j2,x,y)*this.diff_fi_i_y(i1,i2,x,y)+0.25*this.diff_fi_i_x(j1,j2,x,y)*this.fi_i(i1,i2,x,y)+0.25*this.diff_fi_i_y(j1,j2,x,y)*this.fi_i(i1,i2,x,y)-0.1*this.fi_i(j1,j2,x,y)*this.fi_i(i1,i2,x,y);
     });    
     
     val2[0] = this.int_cells(0, 0, 1, 1, function (x,y) {
@@ -299,6 +415,127 @@ function two_dimension_initialize(){
     
 }
 
+function del_lines(index){
+    this.A_matrix.splice(index, 1);
+    for(var k = 0; k < this.n2; ++k){
+        this.b_vector[k].splice(index, 1);
+    }
+    len = this.A_matrix.length;
+    for(var i = 0; i < len; ++i){
+        this.A_matrix[i].splice(index, 1);
+    }
+}
+
+function two_dimension_triangle_initialize(){
+    
+    this.nodes_arrays_generate();
+
+    var len = this.finite_element_nodes.length;
+    
+    var nod_len = this.nodes.length;
+    
+    var time_len = this.n2;
+    
+    for(var i = 0; i < time_len; ++i){
+        this.b_vector[i] = new Array();
+        for (var j = 0; j < nod_len; ++j){
+            this.b_vector[i][j] = 0;
+        }
+    }
+    
+    for (var i = 0; i < nod_len; ++i){
+        this.A_matrix[i] = new Array();
+        this.diff_matrix[i] = new Array();
+        for (var j = 0; j < nod_len; ++j){
+            this.A_matrix[i][j] = 0;
+            this.diff_matrix[i][j] = 0;
+        }
+    }
+    
+    
+    var my_values = ['main','less','more'];
+    for (var i = 0; i < len; ++i){
+        var a1 = this.nodes[this.finite_element_nodes[i]['main']];
+        var a2 = this.nodes[this.finite_element_nodes[i]['less']];
+        var a3 = this.nodes[this.finite_element_nodes[i]['more']];        
+        for(j = 0; j < 3; ++j){
+            for(k = 0; k < 3; ++k){
+                this.A_matrix[this.finite_element_nodes[i][my_values[j]]][this.finite_element_nodes[i][my_values[k]]] += this.int_cells( a1, a2, a3, function(x,y){
+                    return -this.diff_fi_i_x[my_values[k]](x,y,a1,a2,a3,i)*this.diff_fi_i_x[my_values[j]](x,y,a1,a2,a3,i)-this.diff_fi_i_y[my_values[k]](x,y,a1,a2,a3,i)*this.diff_fi_i_y[my_values[j]](x,y,a1,a2,a3,i)+0.25*this.diff_fi_i_x[my_values[k]](x,y,a1,a2,a3,i)*this.fi_i[my_values[j]](x,y,a1,a2,a3,i)+0.25*this.diff_fi_i_y[my_values[k]](x,y,a1,a2,a3,i)*this.fi_i[my_values[j]](x,y,a1,a2,a3,i)-0.1*this.fi_i[my_values[k]](x,y,a1,a2,a3,i)*this.fi_i[my_values[j]](x,y,a1,a2,a3,i);
+                });
+                this.diff_matrix[this.finite_element_nodes[i][my_values[j]]][this.finite_element_nodes[i][my_values[k]]] -= this.int_cells( a1, a2, a3, function(x,y){
+                    return this.fi_i[my_values[k]](x,y,a1,a2,a3,i)*this.fi_i[my_values[j]](x,y,a1,a2,a3,i);
+                });
+                for(var kt = 0; kt < time_len; ++kt){
+                    this.b_vector[kt][this.finite_element_nodes[i][my_values[j]]] -= this.fun(this.nodes[this.finite_element_nodes[i][my_values[k]]].x, this.nodes[this.finite_element_nodes[i][my_values[k]]].y, kt * this.tau) * this.int_cells( a1, a2, a3, function(x,y){
+                        return this.fi_i[my_values[k]](x,y,a1,a2,a3,i) * this.fi_i[my_values[j]](x,y,a1,a2,a3,i);
+                    }); 
+                }                
+            }
+        }
+    }
+    
+    for(var i = 0; i < nod_len; ++i){
+        if(Math.abs(this.nodes[i].x - this.a.x) <= this.h.x/10 && Math.abs(this.nodes[i].y - this.b.y) > this.h.y/10 && Math.abs(this.nodes[i].y - this.a.y) > this.h.y/10){
+            for(var j = 0; j < nod_len; ++j){
+                if(i === j)
+                    continue;
+                for(var k = 0; k < time_len; ++k){
+                    this.b_vector[k][j] -= this.A_matrix[j][i] * this.f_a.x(this.nodes[i].y, k * this.tau);
+                }
+            }
+        }
+        if(Math.abs(this.nodes[i].y - this.a.y) <= this.h.y/10){
+            for(var j = 0; j < nod_len; ++j){
+                if(i === j)
+                    continue;
+                for(var k = 0; k < time_len; ++k){
+                    this.b_vector[k][j] -= this.A_matrix[j][i] * this.f_a.y(this.nodes[i].x, k * this.tau);
+                }
+            }
+        }        
+        if(Math.abs(this.nodes[i].x - this.b.x) <= this.h.x/10 && Math.abs(this.nodes[i].y - this.b.y) > this.h.y/10 && Math.abs(this.nodes[i].y - this.a.y) > this.h.y/10){
+            for(var j = 0; j < nod_len; ++j){
+                if(i === j)
+                    continue;
+                for(var k = 0; k < time_len; ++k){
+                    this.b_vector[k][j] -= this.A_matrix[j][i] * this.f_b.x(this.nodes[i].y, k * this.tau);
+                }
+            }
+        }   
+        if(Math.abs(this.nodes[i].y - this.b.y) <= this.h.y/10){
+            for(var j = 0; j < nod_len; ++j){
+                if(i === j)
+                    continue;
+                for(var k = 0; k < time_len; ++k){
+                    this.b_vector[k][j] -= this.A_matrix[j][i] * this.f_b.y(this.nodes[i].x, k * this.tau);
+                }
+            }
+        }
+        
+    }
+    
+    for(var i = 0, j = 0; j < nod_len; ++i, ++j){
+        if(this.nodes[j].x === this.a.x || this.nodes[j].x === this.b.x
+            || this.nodes[j].y === this.a.y || this.nodes[j].y === this.b.y){
+            this.del_lines(i);
+            i--;
+        }
+    }    
+    
+    this.begginary = new Array();
+    
+    for(var i = 0, j = 0; j < nod_len; ++i, ++j){
+        if(this.nodes[j].x === this.a.x || this.nodes[j].x === this.b.x
+                || this.nodes[j].y === this.a.y || this.nodes[j].y === this.b.y){
+            i--;    
+            continue;
+        }
+        this.begginary[i] = this.f_y(this.nodes[j].x, this.nodes[j].y);
+    }   
+    
+}
+
 function get_matrix_element(i, j, funk) {
     if (Math.abs(i - j) < 1.01) {
         //формируем обычную левую часть матрицы для уравнения du/dt=d2u/dx^2+du/dx+u(x,t)+f(x,t)
@@ -313,7 +550,7 @@ function get_matrix_element(i, j, funk) {
             });        
         //формируем правую часть системы
         if(i != 0 && i != this.n-1)
-            for(var k = 0; k < this.n; ++k){
+            for(var k = 0; k < this.n2; ++k){
                 funk.value[k] += - this.fun(this.a + i * this.h, k * this.tau) * this.int_cells(i, j, function (x) {
                     return this.fi_i(j, x) * this.fi_i(i, x);
                 });                
@@ -341,13 +578,13 @@ function get_matrix_element(i, j, funk) {
 function two_dimension_get_matrix_element(i1, i2, j1, j2, funk){
     if ((Math.abs(i1 - j1) < 1.01) && (Math.abs(i2 - j2) < 1.01)) {
         //формируем обычную левую часть матрицы для уравнения du/dt=d2u/dx^2+d2u/dy^2+du/dx+du/dy+u(x,t)+f(x,y,t)
-        if(i1 != 0 && i1 != this.n-1 && j1 != 0 && j1 != this.n-1 && i2 != 0 && i2 != this.n-1 && j2 != 0 && j2 != this.n-1)
-            this.A_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] = this.indexed_integrals[0][i1-j1][i2-j2];
+        if(i1 != 0 && i1 != (this.n-1) && j1 != 0 && j1 != (this.n-1) && i2 != 0 && i2 != (this.n-1) && j2 != 0 && j2 != (this.n-1))
+            this.A_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] += this.indexed_integrals[0][i1-j1][i2-j2];
         //формируем часть при коэфициентах du/dt системы диф. уравнений
-        if(i1 != 0 && i1 != this.n-1 && j1 != 0 && j1 != this.n-1 && i2 != 0 && i2 != this.n-1 && j2 != 0 && j2 != this.n-1)
+        if(i1 != 0 && i1 != (this.n-1) && j1 != 0 && j1 != (this.n-1) && i2 != 0 && i2 != (this.n-1) && j2 != 0 && j2 != (this.n-1))
             this.diff_matrix[(i1-1)*(this.n-2)+i2-1][(j1-1)*(this.n-2)+j2-1] = - this.indexed_integrals[1][i1-j1][i2-j2];  ;
         //формируем правую часть системы
-        if(i1 != 0 && i1 != this.n-1 && i2 != 0 && i2 != this.n-1){
+        if(i1 != 0 && i1 != (this.n-1) && i2 != 0 && i2 != (this.n-1)){
             var hard_val = this.indexed_integrals[1][i1-j1][i2-j2];  
             for(var k = 0; k < this.n2; ++k){
                 funk.value[k] -= this.fun(this.a.x + (i1) * this.h.x, this.a.y + (i2) * this.h.y, k * this.tau) * hard_val;
@@ -356,21 +593,23 @@ function two_dimension_get_matrix_element(i1, i2, j1, j2, funk){
         //учитываем краевое условие на левой границе х - в точке а
         //j2 != 0 && j2 != this.n - 1 это условие необходимо, т.к. в этих точках нужное значение
         //мы получим чуть ниже при учете граничных условий на границах y
-        if(j1 == 0 && j2 != 0 && j2 != this.n - 1){
+        if(j1 == 0 && j2 != 0 && j2 != (this.n - 1)){
             var hard_val = this.indexed_integrals[0][i1-j1][i2-j2];   
             for(var k = 0; k < this.n2; ++k){
                 funk.value[k] -= this.f_a.x(this.a.y + (i2) * this.h.y, k * this.tau) * hard_val;      
             }
         }
+      
         //учитываем краевое условие на правой границе х - в точке b
         //j2 != 0 && j2 != this.n - 1 это условие необходимо, т.к. в этих точках нужное значение
         //мы получим чуть ниже при учете граничных условий на границах y        
-        if(j1 == this.n - 1 && j2 != 0 && j2 != this.n - 1){
+        if(j1 == (this.n - 1) && j2 != 0 && j2 != (this.n - 1)){
             var hard_val = this.indexed_integrals[0][i1-j1][i2-j2]; 
             for(var k = 0; k < this.n2; ++k){
                 funk.value[k] -= this.f_b.x(this.a.y + (i2) * this.h.y, k * this.tau) * hard_val;
             }
         }
+      
         //учитываем краевое условие на левой границе y - в точке а
         if(j2 == 0){
             var hard_val = this.indexed_integrals[0][i1-j1][i2-j2];  
@@ -378,16 +617,63 @@ function two_dimension_get_matrix_element(i1, i2, j1, j2, funk){
                 funk.value[k] -= this.f_a.y(this.a.x + (i1) * this.h.x, k * this.tau) * hard_val;
             }
         }
+        
         //учитываем краевое условие на правой границе y - в точке b
-        if(j2 == this.n - 1){
+        if(j2 == (this.n - 1)){
             var hard_val = this.indexed_integrals[0][i1-j1][i2-j2];  
             for(var k = 0; k < this.n2; ++k){
                 funk.value[k] -= this.f_b.y(this.a.x + (i1) * this.h.x, k * this.tau) * hard_val;
             }
         }
+        
     }
     else
         return 0;
+}
+
+function triangle_less_fi_i(x,y,a1,a2,a3,i){
+    if(i % 2 ==0)
+        return 1/((a3.y - a1.y)*(a2.x - a1.x)-(a3.x - a1.x)*(a2.y - a1.y)) * ((a3.y - a1.y)*(x - a1.x) - (a3.x - a1.x)*(y - a1.y));
+    else
+        return 1/((a3.y - a1.y)*(a2.x - a1.x)-(a3.x - a1.x)*(a2.y - a1.y)) * ((a3.y - a1.y)*(x - a1.x) - (a3.x - a1.x)*(y - a1.y));
+}
+
+function triangle_less_fi_i_x(x,y,a1,a2,a3,i){
+    if(i % 2 ==0)
+        return 1/((a3.y - a1.y)*(a2.x - a1.x)-(a3.x - a1.x)*(a2.y - a1.y)) * (a3.y - a1.y);
+    else
+        return 1/((a3.y - a1.y)*(a2.x - a1.x)-(a3.x - a1.x)*(a2.y - a1.y)) * (a3.y - a1.y);
+}
+
+function triangle_less_fi_i_y(x,y,a1,a2,a3,i){
+    if(i % 2 ==0)
+        return -1/((a3.y - a1.y)*(a2.x - a1.x)-(a3.x - a1.x)*(a2.y - a1.y)) * (a3.x - a1.x);
+    else
+        return -1/((a3.y - a1.y)*(a2.x - a1.x)-(a3.x - a1.x)*(a2.y - a1.y)) * (a3.x - a1.x);
+}
+
+function triangle_more_fi_i(x,y,a1,a2,a3,i){
+    return 1/((a3.y - a1.y)*(a2.x - a1.x)-(a3.x - a1.x)*(a2.y - a1.y)) * (-(a2.y - a1.y)*(x - a1.x) + (a2.x - a1.x)*(y - a1.y));
+}
+
+function triangle_more_fi_i_x(x,y,a1,a2,a3,i){
+    return -1/((a3.y - a1.y)*(a2.x - a1.x)-(a3.x - a1.x)*(a2.y - a1.y)) * (a2.y - a1.y);
+}
+
+function triangle_more_fi_i_y(x,y,a1,a2,a3,i){
+    return 1/((a3.y - a1.y)*(a2.x - a1.x)-(a3.x - a1.x)*(a2.y - a1.y)) * (a2.x - a1.x);
+}
+
+function triangle_main_fi_i(x,y,a1,a2,a3,i){
+    return 1 - triangle_less_fi_i(x,y,a1,a2,a3,i) - triangle_more_fi_i(x,y,a1,a2,a3,i);
+}
+
+function triangle_main_fi_i_x(x,y,a1,a2,a3,i){
+    return - triangle_less_fi_i_x(x,y,a1,a2,a3,i) - triangle_more_fi_i_x(x,y,a1,a2,a3,i);
+}
+
+function triangle_main_fi_i_y(x,y,a1,a2,a3,i){
+    return - triangle_less_fi_i_y(x,y,a1,a2,a3,i) - triangle_more_fi_i_y(x,y,a1,a2,a3,i);
 }
 
 function one_direct_fi_i(i, x) {
@@ -500,7 +786,7 @@ function two_direct_int_cells(x1, y1, x2, y2, f) {
         ye = yb + this.h.y;
         yq = yb - this.h.y;
     }    
-    var num_stong = 4000;
+    var num_stong = 6000;
     var hxx = Math.abs(xq - xe) / (num_stong - 1);
     var hyy = Math.abs(yq - ye) / (num_stong - 1);
     var s = 0;
@@ -512,6 +798,39 @@ function two_direct_int_cells(x1, y1, x2, y2, f) {
             s = s + xs * ys * this.f(xq + (i + 1 / 2) * hxx, yq + (j + 1 / 2) * hyy);
         }
     }
+    return s;
+}
+
+function triangle_int_cells(a1, a2, a3, f) {
+    var s = 0;
+    var num_stong = 60;
+    this.f = f;
+    
+    if(a1.x < a3.x){
+        var ya = a2.y;
+        var yb = a1.y;
+        var xa = a2.x;
+        
+        var h = Math.abs(yb - ya) / (num_stong - 1);   
+        for (var yi = ya; Math.abs(yi - yb) > h/2 ; yi += h) {
+            for (var xj = xa; Math.abs(xj - (xa + (yi - ya))) > h/2; xj += h) {
+                s = s + h * h * this.f(xj + 0.5 * h, yi + 0.5 * h);
+            }
+        }        
+    }
+    else{
+        var xa = a3.x;
+        var xb = a1.x;
+        var ya = a3.y;
+        
+        var h = Math.abs(xb - xa) / (num_stong - 1);   
+        for (var xi = xa; Math.abs(xi - xb) > h/2 ; xi += h) {
+            for (var yj = ya; Math.abs(yj - (ya + (xi - xa))) > h/2; yj += h) {
+                s = s + h * h * this.f(xi + 0.5 * h, yj + 0.5 * h);
+            }
+        }          
+    }
+        
     return s;
 }
 
@@ -534,16 +853,74 @@ function two_dimension_get_answ(x, y, t) {
     for( i=0 ; i < this.n ; ++i){
         s += this.f_a.y(x, t * this.tau) * this.fi_i( i, 0, x, y);
     }
-    for( i=1 ; i < this.n ; ++i){
+    for( i=1 ; i < this.n - 1 ; ++i){
         s += this.f_a.x(y, t * this.tau) * this.fi_i( 0, i, x, y);
     }
-    for( i=1 ; i < this.n ; ++i){
-        s += this.f_b.x(y, t * this.tau) * this.fi_i( this.n-1, i, x, y);
+    for( i=1 ; i < this.n - 1 ; ++i){
+        s += this.f_b.x(y, t * this.tau) * this.fi_i( this.n - 1, i, x, y);
     }   
-    for( i=1 ; i < this.n-1 ; ++i){
+    for( i=0 ; i < this.n ; ++i){
         s += this.f_b.y(x, t * this.tau) * this.fi_i( i, this.n - 1, x, y);
     }
     return s;
+}
+
+function triangle_get_answ(x, y, t) {
+        
+    var len = this.finite_element_nodes.length;
+    for(var i = 0; i < len; ++i){
+        var chek_1 = (this.nodes[this.finite_element_nodes[i]['less']].x > x && this.nodes[this.finite_element_nodes[i]['more']].x <= x &&
+                this.nodes[this.finite_element_nodes[i]['less']].y > y && this.nodes[this.finite_element_nodes[i]['more']].y <= y)
+        ||((Math.abs(this.nodes[this.finite_element_nodes[i]['less']].x - x) <= this.h.x/100 || Math.abs(this.nodes[this.finite_element_nodes[i]['more']].x - x) <= this.h.x/100) &&
+                (Math.abs(this.nodes[this.finite_element_nodes[i]['less']].y - y) <= this.h.y/100 || Math.abs(this.nodes[this.finite_element_nodes[i]['more']].y - y) <= this.h.y/100));
+        var chek_2 = (this.nodes[this.finite_element_nodes[i]['less']].x <= x && this.nodes[this.finite_element_nodes[i]['more']].x > x &&
+                this.nodes[this.finite_element_nodes[i]['less']].y <= y && this.nodes[this.finite_element_nodes[i]['more']].y > y)
+        ||((Math.abs(this.nodes[this.finite_element_nodes[i]['less']].x - x) <= this.h.x/100 || Math.abs(this.nodes[this.finite_element_nodes[i]['more']].x - x) <= this.h.x/100) &&
+                (Math.abs(this.nodes[this.finite_element_nodes[i]['less']].y - y) <= this.h.y/100 || Math.abs(this.nodes[this.finite_element_nodes[i]['more']].y - y) <= this.h.y/100));
+        if( chek_1 || chek_2 ){
+                    if(chek_1)
+                        i++;
+                    var a1 = this.nodes[this.finite_element_nodes[i]['main']];
+                    var a2 = this.nodes[this.finite_element_nodes[i]['less']];
+                    var a3 = this.nodes[this.finite_element_nodes[i]['more']];   
+                    
+                    return this.answer[t][this.finite_element_nodes[i]['less']] * this.fi_i['less'](x,y,a1,a2,a3,i) + 
+                            this.answer[t][this.finite_element_nodes[i]['more']] * this.fi_i['more'](x,y,a1,a2,a3,i) + 
+                            this.answer[t][this.finite_element_nodes[i]['main']] * this.fi_i['main'](x,y,a1,a2,a3,i);
+                }
+    }
+}
+
+function correct_answer(){
+    var len = this.answer[0].length;
+    for(var k = 0; k < this.n2; ++k){
+        var beg_arr = [];
+        var end_arr = [];
+        for(var i = 0; i < this.n; ++i){
+            beg_arr[i] = this.f_a.y(this.nodes[i].x, k * this.tau);
+            end_arr[i] = this.f_b.y(this.nodes[i].x, k * this.tau);
+        }
+        this.answer[k] = beg_arr.concat(this.answer[k]);
+        
+        for(var i=0, j=this.n; i < len; ++i, ++j){
+            if(i % (this.n-1) == 0){
+                var val = this.f_a.x(this.nodes[j].y, k * this.tau);
+                this.answer[k].splice(j, 0, val);
+                j++;
+            }
+            if(i % (this.n-1) == this.n-2){
+                var val = this.f_b.x(this.nodes[j].y, k * this.tau);
+                this.answer[k].splice(j, 0, val);
+                //j++;                
+            }   
+            if(i == (len-1)){
+                var val = this.f_b.x(this.nodes[this.answer[k].length].y, k * this.tau);
+                this.answer[k].splice(this.answer[k].length, 0, val);                
+            }
+        }
+        
+        this.answer[k] = this.answer[k].concat(end_arr);
+    }
 }
 
 function draw_plot() {
