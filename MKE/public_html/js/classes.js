@@ -58,7 +58,7 @@ onmessage = function (e) {
 
     //console.log('Posting message back to main script'+JSON.stringify(mke));
     postMessage(JSON.stringify(mke));
-}
+};
 
 var msg;
 
@@ -119,7 +119,11 @@ function OneDimension() {
 
     this.v = this.isEnter(this.v) ? this.v : 0.25;
 
-    this.c = this.isEnter(this.c) ? this.c : -0.1;
+    this.c = (this.c != '') ? function (x) {
+        return eval(msg.data[1]['c_factor']);
+    } : function (x) {
+        return -0.1;
+    };
 
     this.f_y_str = msg.data[1]['beg_factor'];
     this.f_a = (this.f_a_str != '') ? function (y) {
@@ -200,7 +204,11 @@ function TwoDimension() {
     this.v1 = this.isEnter(this.v1) ? this.v1 : 0.25;
     this.v2 = this.isEnter(this.v2) ? this.v2 : 0.25;
 
-    this.c = this.isEnter(this.c) ? this.c : -0.1;
+    this.c = (this.c != '') ? function (x, y) {
+        return eval(msg.data[1]['c_factor']);
+    } : function (x, y) {
+        return -0.1;
+    };
 
     var f1 = this.f_a_str.x;
     var f2 = this.f_a_str.y;
@@ -299,7 +307,11 @@ function TwoDimensionTriangle() {
     this.v1 = this.isEnter(this.v1) ? this.v1 : 0.25;
     this.v2 = this.isEnter(this.v2) ? this.v2 : 0.25;
 
-    this.c = this.isEnter(this.c) ? this.c : -0.1;
+    this.c = (this.c != '') ? function (x, y) {
+        return eval(msg.data[1]['c_factor']);
+    } : function (x, y) {
+        return -0.1;
+    };
 
     var f1 = this.f_a_str.x;
     var f2 = this.f_a_str.y;
@@ -430,27 +442,27 @@ function two_dimension_integral_indexing() {
     }
     val1[0] = this.int_cells(0, 0, 1, 1, function (x, y) {
         var i1 = 0, i2 = 0, j1 = 1, j2 = 1;
-        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c(x, y) * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
     });
     val1[1] = this.int_cells(2, 2, 1, 1, function (x, y) {
         var i1 = 2, i2 = 2, j1 = 1, j2 = 1;
-        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c(x, y) * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
     });
     val1[2] = this.int_cells(0, 2, 1, 1, function (x, y) {
         var i1 = 0, i2 = 2, j1 = 1, j2 = 1;
-        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c(x, y) * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
     });
     val1[3] = this.int_cells(1, 1, 1, 1, function (x, y) {
         var i1 = 1, i2 = 1, j1 = 1, j2 = 1;
-        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c(x, y) * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
     });
     val1[4] = this.int_cells(1, 0, 1, 1, function (x, y) {
         var i1 = 1, i2 = 0, j1 = 1, j2 = 1;
-        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c(x, y) * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
     });
     val1[5] = this.int_cells(1, 2, 1, 1, function (x, y) {
         var i1 = 1, i2 = 2, j1 = 1, j2 = 1;
-        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
+        return -this.k1 * this.diff_fi_i_x(j1, j2, x, y) * this.diff_fi_i_x(i1, i2, x, y) - this.k2 * this.diff_fi_i_y(j1, j2, x, y) * this.diff_fi_i_y(i1, i2, x, y) + this.v1 * this.diff_fi_i_x(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.v2 * this.diff_fi_i_y(j1, j2, x, y) * this.fi_i(i1, i2, x, y) + this.c(x, y) * this.fi_i(j1, j2, x, y) * this.fi_i(i1, i2, x, y);
     });
 
     val2[0] = this.int_cells(0, 0, 1, 1, function (x, y) {
@@ -645,7 +657,7 @@ function two_dimension_triangle_initialize() {
         for (j = 0; j < 3; ++j) {
             for (k = 0; k < 3; ++k) {
                 this.A_matrix[this.finite_element_nodes[i][my_values[j]]][this.finite_element_nodes[i][my_values[k]]] += this.int_cells(a1, a2, a3, function (x, y) {
-                    return -this.k1 * this.diff_fi_i_x[my_values[k]](x, y, a1, a2, a3, i) * this.diff_fi_i_x[my_values[j]](x, y, a1, a2, a3, i) - this.k2 * this.diff_fi_i_y[my_values[k]](x, y, a1, a2, a3, i) * this.diff_fi_i_y[my_values[j]](x, y, a1, a2, a3, i) + this.v1 * this.diff_fi_i_x[my_values[k]](x, y, a1, a2, a3, i) * this.fi_i[my_values[j]](x, y, a1, a2, a3, i) + this.v2 * this.diff_fi_i_y[my_values[k]](x, y, a1, a2, a3, i) * this.fi_i[my_values[j]](x, y, a1, a2, a3, i) + this.c * this.fi_i[my_values[k]](x, y, a1, a2, a3, i) * this.fi_i[my_values[j]](x, y, a1, a2, a3, i);
+                    return -this.k1 * this.diff_fi_i_x[my_values[k]](x, y, a1, a2, a3, i) * this.diff_fi_i_x[my_values[j]](x, y, a1, a2, a3, i) - this.k2 * this.diff_fi_i_y[my_values[k]](x, y, a1, a2, a3, i) * this.diff_fi_i_y[my_values[j]](x, y, a1, a2, a3, i) + this.v1 * this.diff_fi_i_x[my_values[k]](x, y, a1, a2, a3, i) * this.fi_i[my_values[j]](x, y, a1, a2, a3, i) + this.v2 * this.diff_fi_i_y[my_values[k]](x, y, a1, a2, a3, i) * this.fi_i[my_values[j]](x, y, a1, a2, a3, i) + this.c(x, y) * this.fi_i[my_values[k]](x, y, a1, a2, a3, i) * this.fi_i[my_values[j]](x, y, a1, a2, a3, i);
                 });
                 this.diff_matrix[this.finite_element_nodes[i][my_values[j]]][this.finite_element_nodes[i][my_values[k]]] -= this.int_cells(a1, a2, a3, function (x, y) {
                     return this.fi_i[my_values[k]](x, y, a1, a2, a3, i) * this.fi_i[my_values[j]](x, y, a1, a2, a3, i);
@@ -729,7 +741,7 @@ function get_matrix_element(i, j, funk) {
         //формируем обычную левую часть матрицы для уравнения du/dt=d2u/dx^2+du/dx+u(x,t)+f(x,t)
         if (i != 0 && i != this.n - 1 && j != 0 && j != this.n - 1)
             this.A_matrix[i - 1][j - 1] = this.int_cells(i, j, function (x) {
-                return -this.k * this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.v * this.diff_fi_i(j, x) * this.fi_i(i, x) + this.c * this.fi_i(j, x) * this.fi_i(i, x);
+                return -this.k * this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.v * this.diff_fi_i(j, x) * this.fi_i(i, x) + this.c(x) * this.fi_i(j, x) * this.fi_i(i, x);
             });
         //формируем часть при коэфициентах du/dt системы диф. уравнений
         if (i != 0 && i != this.n - 1 && j != 0 && j != this.n - 1)
@@ -747,7 +759,7 @@ function get_matrix_element(i, j, funk) {
         //учитываем краевое условие на левой границе х - в точке а
         if (j == 0) {
             var hard_val = this.int_cells(i, j, function (x) {
-                return -this.k * this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.v * this.diff_fi_i(j, x) * this.fi_i(i, x) + this.c * this.fi_i(j, x) * this.fi_i(i, x);
+                return -this.k * this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.v * this.diff_fi_i(j, x) * this.fi_i(i, x) + this.c(x) * this.fi_i(j, x) * this.fi_i(i, x);
             });
             var hard_val2 = -this.int_cells(i, j, function (x) {
                 return this.fi_i(j, x) * this.fi_i(i, x);
@@ -760,7 +772,7 @@ function get_matrix_element(i, j, funk) {
         //учитываем краевое условие на правой границе х - в точке b
         if (j == this.n - 1) {
             var hard_val = this.int_cells(i, j, function (x) {
-                return -this.k * this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.v * this.diff_fi_i(j, x) * this.fi_i(i, x) + this.c * this.fi_i(j, x) * this.fi_i(i, x);
+                return -this.k * this.diff_fi_i(j, x) * this.diff_fi_i(i, x) + this.v * this.diff_fi_i(j, x) * this.fi_i(i, x) + this.c(x) * this.fi_i(j, x) * this.fi_i(i, x);
             });
             var hard_val2 = -this.int_cells(i, j, function (x) {
                 return this.fi_i(j, x) * this.fi_i(i, x);

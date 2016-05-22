@@ -6,7 +6,7 @@
         <meta charset="utf-8">
         <!--[if IE]><meta http-equiv="x-ua-compatible" content="IE=9" /><![endif]-->
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>Веб середовище для чисельного моделювання на базі Методу скінченних елементів</title>
+        <title>Моделювання поширення забруднення</title>
         <meta name="description" content="Веб середовище на базі Методу скінченних елементів">
         <meta name="keywords" content="Метод скінченних елементів, Веб середовище">
         <meta name="author" content="Ростислав Проскуряков">
@@ -60,7 +60,7 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="index.html">Метод скінченних елементів</a>
+                    <a class="navbar-brand" href="index.html">Моделювання поширення забруднення</a>
                 </div>
 
                 <!-- Collect the nav links, forms, and other content for toggling -->
@@ -83,8 +83,8 @@
         <div id="tf-home" class="text-center">
             <div class="overlay">
                 <div class="content">
-                    <h1><strong>Дипломна робота</strong><br> <span class="color">Проскурякова Ростислава</span></h1>
-                    <p class="lead"><strong>Тема:</strong> Веб середовище для чисельного моделювання на базі Методу скінченних елементів</p>
+                    <h1><strong>Лабораторна робота</strong><br> <span class="color">Проскурякова Ростислава</span></h1>
+                    <p class="lead"><strong>Тема:</strong> Математичне моделювання процесу поширення забруднення</p>
                     <a href="#tf-about" class="fa fa-angle-down page-scroll"></a>
                 </div>
             </div>
@@ -200,7 +200,7 @@
                             <div class="thumbnail">
                                 <div class="caption">
                                     <h3>Саморозпад</h3>
-                                    <p>c - це коефіцієнт саморозпаду, наприклад осадження забруднення в землю</p>
+                                    <p>c(x, y) - це коефіцієнт саморозпаду, наприклад осадження забруднення в землю</p>
                                 </div>
                             </div>
                         </div>
@@ -358,7 +358,7 @@
                 <p>Також, варто зауважити, що ми намагаємося апроксимувати диференціальне рівняння другого порядку лінійними скінченними елементами. Водночас, порядок скінченних елементів не може бути менше порядку старшої похідної рівняння (6). Однак, можна послабити цю вимогу, перевівши рівняння в слабку (варіаційну) форму. Продемонструємо це на довільному інтегралі по скінченному елементу V<sub>i</sub>, який розглянемо тільки біля другої похідної:</p>
                 <img src="img/weak_form.png" class="img-responsive" style='display: inline; margin: 0 0 0 30%; height: 70px;' alt="слабка (варіаційна) форма">
                 <img src="img/weak_form_int.png" class="img-responsive" style='display: inline; margin: 0 0 0 30%; height: 70px;' alt="слабка (варіаційна) форма"> (7)
-                <p>Другий доданок (7) завжди рывен нулю, бо базисні функції на границі завжди обертаюсться в нуль.</p>
+                <p>Другий доданок (7) завжди рівен нулю, бо базисні функції на границі завжди обертаюсться в нуль.</p>
                 <p>Зауважимо також, що в випадку нестаціонарного рівняння та початкових умов розв'язок рівняння шукається в наступному виді:</p>
                 <img src="img/nestac.png" class="img-responsive" style='display: inline; margin: 0 0 0 30%; height: 70px;' alt="нестаціонарність">(8)
                 <p>Із тих же міркувань що і раніше, отримуємо систему диференціальних рівнянь:</p>
@@ -509,8 +509,8 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label style="width: 100px;"  for="c_factor">c</label>
-                                            <input step="0.00001" type="number" class="form-control" name="c_factor" id="c_factor" placeholder="Коефіцієнт саморозпаду">
+                                            <label style="width: 100px;"  for="c_factor">c(x)</label>
+                                            <input step="0.00001" type="text" class="form-control" name="c_factor" id="c_factor" placeholder="Коефіцієнт саморозпаду">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
