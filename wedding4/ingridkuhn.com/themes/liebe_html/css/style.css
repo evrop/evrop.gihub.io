@@ -783,7 +783,7 @@ ul.polaroids li {
 /* =========================== Quote ============================ */
 
 #quote {
-    background: url(../img/bgcall.jpg) no-repeat;
+    background: url('../img/quote/1.jpg') no-repeat;
     background-attachment: fixed;
     background-size: cover;
     background-position: center;
@@ -794,6 +794,7 @@ ul.polaroids li {
     font-weight: 700;
     line-height: 40px;
     font-style: italic;
+    text-shadow: 0 0 4px black;
 }
 /* =========================== Registry ============================ */
 
@@ -2495,7 +2496,6 @@ button.list-group-item:hover {
     filter: none;
 }
 
-
 @keyframes snow {
     0% {background-position: 0px 0px, 0px 0px, 0px 0px;}
     50% {background-position: 500px 500px, 100px 200px, -100px 150px;}
@@ -2515,4 +2515,19 @@ button.list-group-item:hover {
     0% {background-position: 0px 0px, 0px 0px, 0px 0px;}
     50% {background-position: 500px 500px, 100px 200px, -100px 150px;}
     100% {background-position: 500px 1000px, 200px 400px, -100px 300px;}
+}
+
+footer {
+    background: url("../img/footer-bg.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+}
+
+footer h2 {
+    font-weight: 700;
+    font-family: 'Lora', serif;
+    font-style: italic;
+    text-shadow: 1px 1px 4px black, 0 0 2px black;
 }
