@@ -18,23 +18,7 @@
 			var mapOptions = {
 				zoom: 12,
 				scrollwheel: false,
-				center: new google.maps.LatLng(50.431486, 30.432574),
-                styles: [
-                    {
-                        "featureType": "landscape",
-                        "elementType": "all",
-                        "stylers": [{"visibility": "on"}, {"color": "#cacdcf"}, {"lightness": "60"}]
-                    },
-                    {"featureType": "landscape.man_made", "elementType": "all", "stylers": [{"visibility": "off"}]},
-                    {"featureType": "poi.attraction", "elementType": "all", "stylers": [{"visibility": "off"}]},
-                    {"featureType": "poi.business", "elementType": "all", "stylers": [{"visibility": "off"}]},
-                    {"featureType": "poi.government", "elementType": "all", "stylers": [{"visibility": "off"}]},
-                    {"featureType": "poi.medical", "elementType": "all", "stylers": [{"visibility": "off"}]},
-                    {"featureType": "poi.park", "elementType": "geometry", "stylers": [{"color": "#dbe5ba"}]},
-                    {"featureType": "poi.place_of_worship", "elementType": "all", "stylers": [{"visibility": "off"}]},
-                    {"featureType": "road", "elementType": "geometry", "stylers": [{"visibility": "simplified"}]},
-                    {"featureType": "transit.line", "elementType": "all", "stylers": [{"visibility": "simplified"}]},
-                    {"featureType": "water", "elementType": "all", "stylers": [{"color": "#b5dbef"}]}]
+				center: new google.maps.LatLng(50.431486, 30.432574)
 			};
 			var map = new google.maps.Map(mapCanvas, mapOptions);
 			addMarker(map, 50.408442, 30.378427, 'Ресторан');
