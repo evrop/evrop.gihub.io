@@ -23,5 +23,4 @@
 			var map = new google.maps.Map(mapCanvas, mapOptions);
 			addMarker(map, 50.408442, 30.378427, 'Ресторан');
 			addMarker(map, 50.448589, 30.478210, 'ЗАГС');
-			addMarker(map, 50.460347, 30.357631, 'Место встречи');
 		});
